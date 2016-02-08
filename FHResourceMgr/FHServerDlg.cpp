@@ -6,11 +6,15 @@
 #include "FHServerDlg.h"
 #include "FHAcceptSocket.h"
 #include "FHSocketThread.h"
+#include <vector>
+#include <string>
 
 
 // FHServerDlg 对话框
 
 IMPLEMENT_DYNAMIC(FHServerDlg, CDialog)
+
+FHServerDlg* FHServerDlg::m_pcOwnerWin = NULL;
 
 FHServerDlg::FHServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(FHServerDlg::IDD, pParent)
@@ -58,6 +62,8 @@ BOOL FHServerDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	m_pcOwnerWin = this;
+
 	m_cClientCtrlList.SetExtendedStyle(m_cClientCtrlList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
 
@@ -66,6 +72,7 @@ BOOL FHServerDlg::OnInitDialog()
 	m_cClientCtrlList.InsertColumn(1, _TEXT("IP地址"),LVCFMT_CENTER,100,1);
 	m_cClientCtrlList.InsertColumn(2, _TEXT("状态"),LVCFMT_LEFT,100,2);
 
+	/*
 	m_cClientCtrlList.InsertItem(0, _T("Java"));   
     m_cClientCtrlList.SetItemText(0, 1, _T("192.168.0.1"));   
     m_cClientCtrlList.SetItemText(0, 2, _T("Connect"));
@@ -77,7 +84,7 @@ BOOL FHServerDlg::OnInitDialog()
 	m_cClientCtrlList.InsertItem(2, _T("Cs"));   
 	m_cClientCtrlList.SetItemText(2, 1, _T("192.168.0.3"));   
 	m_cClientCtrlList.SetItemText(2, 2, _T("Disconnect"));
-
+*/
 	if (NULL == m_pcServerSocket)
 	{
 		m_pcServerSocket = new FHAcceptSocket();
@@ -87,12 +94,17 @@ BOOL FHServerDlg::OnInitDialog()
 		}
 	}
 
+	
+	
+	//this->SendMessage(FH_MSCMD_UPDATECONNECT);
+
 	return TRUE;
 }
 
 BEGIN_MESSAGE_MAP(FHServerDlg, CDialog)
 	ON_NOTIFY(NM_RCLICK, IDC_LIST2, &FHServerDlg::OnNMRClickListOfClient)
 	ON_COMMAND(ID_1_32774, &FHServerDlg::OnSelectOpen)
+	ON_MESSAGE(FH_MSCMD_UPDATECONNECT, RefleshConnectList)
 END_MESSAGE_MAP()
 
 BEGIN_DISPATCH_MAP(FHServerDlg, CDialog)
@@ -115,6 +127,7 @@ END_INTERFACE_MAP()
 
 void FHServerDlg::OnNMRClickListOfClient(NMHDR *pNMHDR, LRESULT *pResult)
 {
+
 	// LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<NMITEMACTIVATE>(pNMHDR);
 	// TODO: 在此添加控件通知处理程序代码
 	*pResult = 0;
@@ -138,6 +151,20 @@ void FHServerDlg::OnSelectOpen()
 {
 	// TODO: 在此添加命令处理程序代码
 	int i=0;
+}
+
+LRESULT FHServerDlg::RefleshConnectList(WPARAM wParam,LPARAM lParam)
+{
+	FH_MachineInfo cInfo = *((FH_MachineInfo*)lParam);
+
+	CString s1 = cInfo.address;
+
+	int count = m_cClientCtrlList.GetItemCount();
+	m_cClientCtrlList.InsertItem(count, cInfo.hostname);
+	m_cClientCtrlList.SetItemText(count, 1, cInfo.address);   
+	m_cClientCtrlList.SetItemText(count, 2, "Connect");
+
+	return ++count;
 }
 
 /*

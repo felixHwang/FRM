@@ -50,5 +50,13 @@ void FHMessage::SerializeConfigData(CArchive& ar)
 	*/
 }
 
-IMPLEMENT_SERIAL(FHMessage,CObject,1)
+//IMPLEMENT_SERIAL(FHMessage,CObject,1)
+
+FHMessage& FHMessage::operator=(const FHMessage& cMsg)
+{
+	this->SetCommandID(cMsg.GetCommandID());
+	this->SetMachineInfo(cMsg.GetMachineInfo());
+	return *this;
+}
+
 // FHMessage ³ÉÔ±º¯Êý

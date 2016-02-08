@@ -30,12 +30,25 @@ public:
 
 	BOOL SendMessage(const FHMessage& msg);
 
-	BOOL RecvMessage(FHMessage& msg);
+	BOOL RecvMessage();
+
+	BOOL PopMessage(FHMessage& cMsg);
+
+	virtual CString GetPeerName();
+
+	void DisplayErrMessageBox(CString str, int err);
 
 protected:
+	BOOL ParseRecvMessage(const char* pcData);
 	SOCKET m_hSocket;
 	FH_SOCKET_TYPE m_eSocketType;
 	CString m_cAddr;
 	UINT m_szPort;
 	FHWinThread* m_pcWinThread;
+
+	CList<FHMessage> m_cListMsg;
+
+	char* m_pcRecvBuffer;
+	char* m_pcRemainBuffer;
+	int m_iRemainPos;
 };

@@ -164,14 +164,14 @@ void FHClientDlg::SendConfigInfo()
 {
 	if (NULL != m_pcClientSocket) {
 		FHMessage cMsg;
-		cMsg.SetCommandID(FH_COMM_CONFIGINFO);
-		cMsg.SetConfigInfo(m_cConfigInfo);
+		cMsg.SetCommandID(FH_COMM_MACHINEINFO);
+		cMsg.SetMachineInfo(m_cConfigInfo);
 		m_pcClientSocket->SendMessage(cMsg);
 	}
 	/*
 	if (NULL != m_cArcOut) {
 		FHMessage cMessage;
-		cMessage.SetConfigInfo(m_cConfigInfo);
+		cMessage.SetMachineInfo(m_cConfigInfo);
 		*m_cArcOut << &cMessage;
 
 		m_cArcOut->Flush();

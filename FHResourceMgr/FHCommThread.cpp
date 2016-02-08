@@ -7,6 +7,9 @@
 #include "FHCommSocket.h"
 #include "FHMessage.h"
 #include "FHCommSocket.h"
+#include "FHServerDlg.h"
+#include <vector>
+#include <string>
 
 // FHCommThread
 
@@ -78,15 +81,21 @@ void FHCommThread::UnRegisterSocket()
 void FHCommThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 {
 	FHMessage cMsg;
-
 	while (!m_bQuit) {
 		if (NULL != m_pcSocket) {
-			if (m_pcSocket->RecvMessage(cMsg)) {
-				int i = 0;
+			if (m_pcSocket->RecvMessage()) {
+
+				while (m_pcSocket->PopMessage(cMsg)) {
+					if (FH_COMM_MACHINEINFO == cMsg.GetCommandID()) {
+						FH_MachineInfo info;
+						info.hostname = cMsg.GetMachineInfo().hostname;
+						info.address = m_pcSocket->GetPeerName();
+						int ret = AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_UPDATECONNECT,0,(LPARAM)&info);
+					}
+				}
 			}
 		}
 	}
-
 }
 
 // FHCommThread 消息处理程序

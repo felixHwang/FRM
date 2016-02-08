@@ -53,8 +53,8 @@ void FHConnectThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 	{
 		FHMessage cMsg;
 		if (NULL != m_pcSocket) {
-			if (m_pcSocket->RecvMessage(cMsg)) {
-
+			if (m_pcSocket->RecvMessage()) {
+				
 			}
 		}
 	} // while

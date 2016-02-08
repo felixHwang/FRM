@@ -49,7 +49,7 @@ private:
 
 	CArchive* m_cArcOut; // Êä³öCArchive
 
-	FH_Command_ConfigInfo m_cConfigInfo;
+	FH_MSG_MachineInfo m_cConfigInfo;
 
 	FHMessage m_cMessage;
 

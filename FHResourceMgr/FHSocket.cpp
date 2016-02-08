@@ -10,20 +10,38 @@
 FHSocket::FHSocket(const FH_SOCKET_TYPE type)
 :m_eSocketType(type)
 ,m_hSocket(-1)
+,m_pcRecvBuffer(NULL)
+,m_pcRemainBuffer(NULL)
+,m_iRemainPos(0)
 {
+	m_pcRecvBuffer = new char[SO_RCVBUF];
+	m_pcRemainBuffer = new char[SO_RCVBUF];
 }
 
 FHSocket::FHSocket(const FH_SOCKET_TYPE type, const SOCKET socket)
 :m_eSocketType(type)
 ,m_hSocket(socket)
+,m_pcRecvBuffer(NULL)
+,m_pcRemainBuffer(NULL)
+,m_iRemainPos(0)
 {
-	WSADATA sWSAData;
-	memset(&sWSAData, 0, sizeof(WSADATA));
+	m_pcRecvBuffer = new char[SO_RCVBUF];
+	m_pcRemainBuffer = new char[SO_RCVBUF];
+	//WSADATA sWSAData;
+	//memset(&sWSAData, 0, sizeof(WSADATA));
 	//int nErrCode = WSAStartup(0x0101, &sWSAData);
 }
 
 FHSocket::~FHSocket(void)
 {
+	if (NULL != m_pcRecvBuffer) {
+		delete[] m_pcRecvBuffer;
+		m_pcRecvBuffer = NULL;
+	}
+	if (NULL != m_pcRemainBuffer) {
+		delete[] m_pcRemainBuffer;
+		m_pcRemainBuffer = NULL;
+	}
 }
 
 BOOL FHSocket::CreateSocket(UINT uiPort /*= FH_DEFAULT_CONNECT_PORT*/)
@@ -31,9 +49,12 @@ BOOL FHSocket::CreateSocket(UINT uiPort /*= FH_DEFAULT_CONNECT_PORT*/)
 	//AfxSocketInit();
 	m_szPort = uiPort;
 	m_hSocket = socket(AF_INET, SOCK_STREAM, 0);
+	BOOL bNodelay=TRUE;
+	BOOL bDebug=TRUE;
+	setsockopt(m_hSocket, IPPROTO_TCP,TCP_NODELAY,(const char*)&bNodelay,sizeof(BOOL));
+	setsockopt(m_hSocket, SOL_SOCKET,SO_DEBUG,(const char*)&bDebug,sizeof(BOOL));   
 
 	return TRUE;
-
 }
 
 BOOL FHSocket::StartConnect(CString cStrAddr /*= _T("127.0.0.1")*/)
@@ -109,72 +130,156 @@ BOOL FHSocket::CloseSocket()
 	return TRUE;
 }
 
-BOOL FHSocket::SendMessage(const FHMessage& msg)
+BOOL FHSocket::SendMessage(const FHMessage& cMsg)
 {
 	INT lenBuffer = 1024*1024;
 	TCHAR* pBuffer = new TCHAR[lenBuffer];
 
-	char* pWrite = pBuffer;
-	UINT tmp = msg.GetCommandID();
-	memcpy(pWrite, &tmp, sizeof(tmp));
-	pWrite += sizeof(tmp);
-
-	send(m_hSocket, pBuffer, sizeof(tmp), 0);
 	
-
-	FH_Command_ConfigInfo configInfo = msg.GetConfigInfo();
-	INT totalSize = sizeof(INT)*2 + configInfo.lenHostname;
-	pWrite = pBuffer;
-	memcpy(pWrite, &totalSize, sizeof(totalSize));
-	pWrite += sizeof(totalSize);
-
-	tmp = configInfo.lenHostname;
+	int tmp = cMsg.GetCommandID();
+	char* pWrite = m_pcRecvBuffer + sizeof(int);
 	memcpy(pWrite, &tmp, sizeof(tmp));
-	pWrite += sizeof(tmp);
+	pWrite += sizeof(int);
 
-	memcpy(pWrite, configInfo.hostname.GetString(), configInfo.lenHostname);
-
-	send(m_hSocket, pBuffer, totalSize, 0);
-
-	delete[] pBuffer;
+	if (FH_COMM_MACHINEINFO == tmp) {
+		tmp = cMsg.GetMachineInfo().hostname.GetLength();
+		memcpy(pWrite, &tmp, sizeof(int));
+		pWrite += sizeof(int);
+		memcpy(pWrite,  cMsg.GetMachineInfo().hostname.GetString(), tmp);
+		tmp += sizeof(int)*3;
+		memcpy(m_pcRecvBuffer, &tmp, sizeof(int));
+		tmp = send(m_hSocket, m_pcRecvBuffer, tmp, 0);
+		if (SOCKET_ERROR == tmp) {
+			AfxMessageBox("发送客户端信息失败", GetLastError());
+		}
+	}
 
 	return TRUE;
 }
 
-BOOL FHSocket::RecvMessage(FHMessage& msg)
+BOOL FHSocket::ParseRecvMessage(const char* pcData)
 {
-	INT lenBuffer = 1024*1024;
-	TCHAR* pBuffer = new TCHAR[lenBuffer];
+	int totalSize = *((int*)pcData);
+	const char* pRead = pcData + sizeof(int);
+	int commandID = *((int*)pRead);
+	pRead += sizeof(int);
 
+	if (FH_COMM_MACHINEINFO == commandID) {
+		int len = *((int*)pRead);
+		pRead += sizeof(int);
+		CString strName(pRead, len);
+		FHMessage cMsg;
+		cMsg.SetCommandID(commandID);
+		cMsg.SetMachineInfo(FH_MSG_MachineInfo(strName));
+		m_cListMsg.AddTail(cMsg);
+		m_iRemainPos = 0;
+	}
+	return TRUE;
+}
+
+BOOL FHSocket::RecvMessage()
+{
+	if (INVALID_SOCKET == m_hSocket) {
+		return FALSE;
+	}
+
+	INT lenBuffer = SO_RCVBUF;
 	
-	int result = recv(m_hSocket, pBuffer, lenBuffer, 0);
-	if (SOCKET_ERROR == result) {
+	int recvSize = recv(m_hSocket, m_pcRecvBuffer, lenBuffer, 0);
+	if (SOCKET_ERROR == recvSize) {
+		this->DisplayErrMessageBox("接收数据失败", GetLastError());
 		return FALSE;
 	}
 	else {
-		// 构造消息命令
-		UINT commandID = *(UINT*)pBuffer;
-		if (FH_COMM_CONFIGINFO == commandID) {
-			result = recv(m_hSocket, pBuffer, lenBuffer, 0);
-			if (SOCKET_ERROR != result) {
-				// hostname length
-				INT totalSize = *(INT*)pBuffer;
-				INT lenHostname = *(((INT*)pBuffer)+1);
-				if (result != totalSize) {
-					return FALSE;
-				}
-				CString hostname((char*)((UINT*)pBuffer+2),lenHostname);
-				msg.SetCommandID(commandID);
-				msg.SetConfigInfo(FH_Command_ConfigInfo(lenHostname,hostname));
+
+		// 上次有消息遗留，需要拼接处理
+		if (0 < m_iRemainPos) {
+			int lastSize = *((int*)m_pcRemainBuffer);
+			int lastNeed = lastSize - m_iRemainPos;
+			// 此次依旧未能接收完全
+			if (recvSize < lastNeed) {
+				memcpy(m_pcRemainBuffer+m_iRemainPos, m_pcRecvBuffer, recvSize);
+				m_iRemainPos += recvSize;
 				return TRUE;
+			}
+			else {	// 上次遗留消息可以接收完全
+				// 读取到完整的消息，并开始解析（遗留消息处理）
+				memcpy(m_pcRemainBuffer+m_iRemainPos, m_pcRecvBuffer, lastNeed);
+				ParseRecvMessage(m_pcRemainBuffer);
+
+				// 处理剩余的消息
+				char* pRead = m_pcRecvBuffer + lastNeed;
+				int remaindSize = recvSize - lastNeed;
+				int newSize = *((int*)pRead);
+				while (newSize <= remaindSize) {
+					ParseRecvMessage(pRead);
+					remaindSize -= newSize;
+					if (0 == remaindSize) {
+						break;
+					}
+					pRead += newSize;
+					newSize = *((int*)pRead);
+				}
+				if (0 != remaindSize) {
+					memcpy(m_pcRemainBuffer, pRead, remaindSize);
+					m_iRemainPos = remaindSize;
+				}
+			}
+		}
+		else { //上次消息未有遗留
+			// 逻辑同上
+			// 处理剩余的消息
+			char* pRead = m_pcRecvBuffer;
+			int remaindSize = recvSize;
+			int newSize = *((int*)pRead);
+			while (newSize <= remaindSize) {
+				ParseRecvMessage(pRead);
+				remaindSize -= newSize;
+				if (0 == remaindSize) {
+					break;
+				}
+				pRead += newSize;
+				newSize = *((int*)pRead);
+			}
+			if (0 != remaindSize) {
+				memcpy(m_pcRemainBuffer, pRead, remaindSize);
+				m_iRemainPos = remaindSize;
 			}
 		}
 	}
-	
-	return FALSE;
+	return TRUE;
 }
 
 SOCKET FHSocket::Accept(sockaddr* addr, int* addrlen)
 {
 	return accept(m_hSocket, addr, addrlen);
+}
+
+CString FHSocket::GetPeerName()
+{
+	struct sockaddr_in sa;
+	int len = sizeof(sa);
+	if(!getpeername(m_hSocket, (struct sockaddr *)&sa, &len))
+	{
+		return CString(inet_ntoa(sa.sin_addr));
+	}
+	return CString("");
+}
+
+void FHSocket::DisplayErrMessageBox(CString str, int err)
+{
+	CString strErr;
+	strErr.Format("[FHSocket]%s,err=%d", str.GetString(), err);
+	AfxMessageBox(strErr);
+}
+
+BOOL FHSocket::PopMessage(FHMessage& cMsg)
+{
+	if (m_cListMsg.IsEmpty()) {
+		return FALSE;
+	}
+	else {
+		cMsg =  m_cListMsg.RemoveHead();
+		return TRUE;
+	}
 }
