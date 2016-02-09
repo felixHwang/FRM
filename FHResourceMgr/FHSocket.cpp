@@ -25,6 +25,7 @@ FHSocket::FHSocket(const FH_SOCKET_TYPE type, const SOCKET socket)
 ,m_pcRemainBuffer(NULL)
 ,m_iRemainPos(0)
 {
+	// SO_RCVBUF > SO_SNDBUF
 	m_pcRecvBuffer = new char[SO_RCVBUF];
 	m_pcRemainBuffer = new char[SO_RCVBUF];
 	//WSADATA sWSAData;
@@ -34,6 +35,8 @@ FHSocket::FHSocket(const FH_SOCKET_TYPE type, const SOCKET socket)
 
 FHSocket::~FHSocket(void)
 {
+	CloseSocket();
+
 	if (NULL != m_pcRecvBuffer) {
 		delete[] m_pcRecvBuffer;
 		m_pcRecvBuffer = NULL;
@@ -51,15 +54,14 @@ BOOL FHSocket::CreateSocket(UINT uiPort /*= FH_DEFAULT_CONNECT_PORT*/)
 	m_hSocket = socket(AF_INET, SOCK_STREAM, 0);
 	BOOL bNodelay=TRUE;
 	BOOL bDebug=TRUE;
-	setsockopt(m_hSocket, IPPROTO_TCP,TCP_NODELAY,(const char*)&bNodelay,sizeof(BOOL));
-	setsockopt(m_hSocket, SOL_SOCKET,SO_DEBUG,(const char*)&bDebug,sizeof(BOOL));   
+	//setsockopt(m_hSocket, IPPROTO_TCP,TCP_NODELAY,(const char*)&bNodelay,sizeof(BOOL));
+	//setsockopt(m_hSocket, SOL_SOCKET,SO_DEBUG,(const char*)&bDebug,sizeof(BOOL));   
 
 	return TRUE;
 }
 
 BOOL FHSocket::StartConnect(CString cStrAddr /*= _T("127.0.0.1")*/)
-{
-
+ {
 	m_cAddr = cStrAddr;
 	m_cAddr = "127.0.0.1";
 
@@ -102,19 +104,20 @@ BOOL FHSocket::StartConnect(CString cStrAddr /*= _T("127.0.0.1")*/)
 		pcThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTACCEPT, 0);
 	}
 	else if (FH_SOCKET_TYPE_CLIENT == m_eSocketType) {
+		ClearError();
+		int retCode =  connect(m_hSocket, (sockaddr*)&socketAddr, sizeof(SOCKADDR));
+		if (0 == retCode) {
 
-		int ret =  connect(m_hSocket, (sockaddr*)&socketAddr, sizeof(SOCKADDR));
-		if (0 == ret) {
-
-			FHConnectThread* pcThread = (FHConnectThread*)AfxBeginThread(RUNTIME_CLASS(FHConnectThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
+			/*FHConnectThread* pcThread = (FHConnectThread*)AfxBeginThread(RUNTIME_CLASS(FHConnectThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
 
 			pcThread->RegisterSocket(m_hSocket);
 
 			pcThread->ResumeThread();
 
-			pcThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTCONNECT, 0);
+			pcThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTCONNECT, 0);*/
 		}
 		else {
+			SetErrorCode(retCode);
 			return FALSE;
 		}
 	}
@@ -125,8 +128,10 @@ BOOL FHSocket::StartConnect(CString cStrAddr /*= _T("127.0.0.1")*/)
 
 BOOL FHSocket::CloseSocket()
 {
-	closesocket(m_hSocket);
-	m_hSocket = INVALID_SOCKET;
+	if (INVALID_SOCKET != m_hSocket) {
+		closesocket(m_hSocket);
+		m_hSocket = INVALID_SOCKET;
+	}
 	return TRUE;
 }
 
@@ -182,12 +187,13 @@ BOOL FHSocket::RecvMessage()
 	if (INVALID_SOCKET == m_hSocket) {
 		return FALSE;
 	}
-
-	INT lenBuffer = SO_RCVBUF;
-	
-	int recvSize = recv(m_hSocket, m_pcRecvBuffer, lenBuffer, 0);
+	ClearError();
+	int recvSize = recv(m_hSocket, m_pcRecvBuffer, SO_RCVBUF, 0);
 	if (SOCKET_ERROR == recvSize) {
-		this->DisplayErrMessageBox("接收数据失败", GetLastError());
+		if (WSAECONNRESET != GetLastError()) {
+			this->DisplayErrMessageBox("接收数据失败", GetLastError());
+		}
+		SetErrorCode(GetLastError());
 		return FALSE;
 	}
 	else {
@@ -282,4 +288,19 @@ BOOL FHSocket::PopMessage(FHMessage& cMsg)
 		cMsg =  m_cListMsg.RemoveHead();
 		return TRUE;
 	}
+}
+
+void FHSocket::ClearError()
+{
+	m_iErrorCode = 0;
+}
+
+int FHSocket::GetErrorCode()
+{
+	return m_iErrorCode;
+}
+
+void FHSocket::SetErrorCode(int errorCode)
+{
+	m_iErrorCode = errorCode;
 }

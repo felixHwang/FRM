@@ -14,6 +14,7 @@
 IMPLEMENT_DYNCREATE(FHConnectThread, CWinThread)
 
 FHConnectThread::FHConnectThread()
+:m_pcConnectSocket(NULL)
 {
 }
 
@@ -31,7 +32,7 @@ BOOL FHConnectThread::InitInstance()
 int FHConnectThread::ExitInstance()
 {
 	// TODO: 在此执行任意逐线程清理
-	//m_bQuit = TRUE;
+	m_bQuit = TRUE;
 	return CWinThread::ExitInstance();
 }
 
@@ -52,9 +53,15 @@ void FHConnectThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 	while (!m_bQuit)
 	{
 		FHMessage cMsg;
-		if (NULL != m_pcSocket) {
-			if (m_pcSocket->RecvMessage()) {
+		if (NULL != m_pcConnectSocket) {
+			if (m_pcConnectSocket->RecvMessage()) {
 				
+			}
+			else {
+				if (WSAECONNRESET == m_pcConnectSocket->GetErrorCode()) {
+					int ret = AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_SERVERDISCONNECT);
+					return;
+				}
 			}
 		}
 	} // while
@@ -63,13 +70,28 @@ void FHConnectThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 
 void FHConnectThread::RegisterSocket(const SOCKET& hSocket)
 {
-	m_hSocket = hSocket;
+	//m_hSocket = hSocket;
 	m_pcSocket = new FHConnectSocket(hSocket);
+}
+
+void FHConnectThread::RegisterSocket(FHConnectSocket* pcSocket)
+{
+	if (NULL != pcSocket) {
+		m_pcConnectSocket = pcSocket;
+	}
 }
 
 void FHConnectThread::UnRegisterSocket()
 {
+	m_pcConnectSocket = NULL;
+}
 
+void FHConnectThread::StopThread()
+{
+	m_bQuit = TRUE;
+	DWORD dwCode;
+	TerminateThread(this->m_hThread, dwCode);
+	CloseHandle(this->m_hThread);
 }
 
 // FHConnectThread 消息处理程序

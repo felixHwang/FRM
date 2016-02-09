@@ -13,6 +13,7 @@
 #define IDD_DIALOG1                     135
 #define IDD_DIALOG2                     136
 #define IDD_DIALOG3                     137
+#define IDD_DIALOGFILEBR                137
 #define IDR_MENU1                       138
 #define IDR_MENU_CLIENTOPE              138
 #define IDR_MENU2                       139
@@ -21,6 +22,11 @@
 #define IDD_DIALOG_LOGIN                145
 #define IDD_DIALOG6                     146
 #define IDD_DIALOG7                     147
+#define IDI_ICON_FILEDEFAULT            150
+#define IDI_ICON_FILENETWORK            152
+#define IDI_ICON_FOLDERDEFAULT          153
+#define IDI_ICON1                       154
+#define IDI_ICON_FOLDERNETWORK          154
 #define IDC_BUTTON1                     1000
 #define IDC_BUTTON2                     1001
 #define IDC_EDIT1                       1003
@@ -29,7 +35,6 @@
 #define IDC_LIST4                       1008
 #define IDC_EDIT2                       1009
 #define IDC_LIST5                       1010
-#define IDC_EDIT3                       1011
 #define IDC_STATIC2                     1012
 #define ID_32771                        32771
 #define ID_32772                        32772
@@ -42,7 +47,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        149
+#define _APS_NEXT_RESOURCE_VALUE        155
 #define _APS_NEXT_COMMAND_VALUE         32776
 #define _APS_NEXT_CONTROL_VALUE         1013
 #define _APS_NEXT_SYMED_VALUE           106

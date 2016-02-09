@@ -68,7 +68,7 @@ BOOL CFHResourceMgrApp::InitInstance()
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
 
 	FHDiagLogin loginDlg;
-	INT_PTR nLoginResult = loginDlg.DoModal();
+	INT_PTR nLoginResult = FH_DIAGLOGIN_SERVER/*loginDlg.DoModal()*/;
 	if (FH_DIAGLOGIN_CLIENT == nLoginResult) {
 		// client
 		FHClientDlg clientDlg;

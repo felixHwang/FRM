@@ -26,10 +26,6 @@ FHClientDlg::FHClientDlg(CWnd* pParent /*=NULL*/)
 
 FHClientDlg::~FHClientDlg()
 {
-	if (NULL != m_pcClientSocket) {
-		delete m_pcClientSocket;
-		m_pcClientSocket = NULL;
-	}
 }
 
 void FHClientDlg::OnFinalRelease()
@@ -50,32 +46,13 @@ void FHClientDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_STATIC2, m_cPromptText);
 }
 
-void FHClientDlg::OnExit()
-{
-	CWnd* pcParent = GetParent();
-	if (NULL != pcParent) {
-		this->DestroyWindow();
-		pcParent->DestroyWindow();
-	}
-
-}
-
 void FHClientDlg::OnClose()
 {
-	CWnd* pcParent = GetParent();
 	CDialog::OnClose();
-	if (NULL != pcParent) {
-		::SendMessage(pcParent->m_hWnd, WM_CLOSE, 0, 0); 
-	}
-	
 }
 
 BOOL FHClientDlg::DestroyWindow()
 {
-	CWnd* pcParent = GetParent();
-	if (NULL != pcParent) {
-		::SendMessage(pcParent->m_hWnd, WM_CLOSE, 0, 0); 
-	}
 	return CDialog::DestroyWindow();
 }
 
@@ -84,6 +61,7 @@ BEGIN_MESSAGE_MAP(FHClientDlg, CDialog)
 	ON_WM_CLOSE()
 	ON_BN_CLICKED(IDC_BUTTON1, &FHClientDlg::OnBnClickedButtonConnServer)
 	ON_BN_CLICKED(IDC_BUTTON2, &FHClientDlg::OnBnClickedButtonDisconnServer)
+	ON_MESSAGE(FH_MSCMD_SERVERDISCONNECT, RecvDisconnect)
 END_MESSAGE_MAP()
 
 BEGIN_DISPATCH_MAP(FHClientDlg, CDialog)
@@ -104,17 +82,12 @@ END_INTERFACE_MAP()
 
 // FHClientDlg 消息处理程序
 
-void FHClientDlg::OnBnClickedButtonConnServer()
-{
-	// TODO: 在此添加控件通知处理程序代码
-	ConnectServer();
-}
-
 BOOL FHClientDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	InitConfigInfo();
+	/*
+	InitMachineInfo();
 
 	if (NULL != m_pcClientSocket) {
 		m_pcClientSocket = new FHConnectSocket();
@@ -124,128 +97,90 @@ BOOL FHClientDlg::OnInitDialog()
 			StartConnect();
 		}
 	}
-	return TRUE;
-}
 
-void FHClientDlg::InitConfigInfo()
-{
-	char hostname[255];
-	PHOSTENT hostinfo;
-	
-	//m_cConfigInfo.addr = _T("X.X.X.X");
-	m_cConfigInfo.hostname = _T("Unknow");
-
-	if(0 == gethostname(hostname, sizeof(hostname))) {
-		// CA2W
-		// 这是获取主机名，如果获得主机名成功的话，将返回一个指针，指向hostinfo，hostinfo
-		
-		//int lenAnsi = strlen(hostname);
-		//TCHAR* pTmpStr = new TCHAR[sizeof(TCHAR)*lenAnsi];
-		//memset(pTmpStr,0,lenAnsi*sizeof(TCHAR));
-		//MultiByteToWideChar(CP_ACP, 0, hostname, -1, pTmpStr, sizeof(TCHAR)*lenAnsi);
-		m_cConfigInfo.hostname.Format(_T("%s"), hostname);
-		m_cConfigInfo.lenHostname = m_cConfigInfo.hostname.GetLength();
-		//delete[] pTmpStr;
-		/*
-		if(NULL != (hostinfo = gethostbyname(hostname))) 
-		{ 
-			char* pAddr = inet_ntoa (*(struct in_addr *)*hostinfo->h_addr_list);
-			//lenAnsi = strlen(pAddr);
-			//TCHAR* pTmpStr = new TCHAR[sizeof(TCHAR)*lenAnsi];
-			//memset(pTmpStr,0,lenAnsi*sizeof(TCHAR));
-			//MultiByteToWideChar(CP_ACP, 0, pAddr, -1, pTmpStr, sizeof(TCHAR)*lenAnsi);
-			m_cConfigInfo.addr.Format(_T("%s"), pAddr);
-		}
-		*/
-	}
-}
-
-void FHClientDlg::SendConfigInfo()
-{
-	if (NULL != m_pcClientSocket) {
-		FHMessage cMsg;
-		cMsg.SetCommandID(FH_COMM_MACHINEINFO);
-		cMsg.SetMachineInfo(m_cConfigInfo);
-		m_pcClientSocket->SendMessage(cMsg);
-	}
-	/*
-	if (NULL != m_cArcOut) {
-		FHMessage cMessage;
-		cMessage.SetMachineInfo(m_cConfigInfo);
-		*m_cArcOut << &cMessage;
-
-		m_cArcOut->Flush();
-		//发送内容给服务器
-		//CString strText = _T("client reply");
-		//m_pcClientSocket->Send(strText, strText.GetLength());
-	}
 	*/
+
+	//m_cClientMgr.StartConnect("127.0.0.1");
+
+	AbleConnectFunction(true);
+
+	return TRUE;
 }
 
 void FHClientDlg::OnTimer(UINT_PTR nIDEvent)
 {
+	if (m_bConnecting) {
+		return;
+	}
 	++m_szConnectTimes;
-	m_cPromptText.Format(_T("连接服务器失败，第 %d 次尝试重新连接，请稍后……"), m_szConnectTimes);
-	this->SetDlgItemText(IDC_STATIC2, m_cPromptText);
 	StartConnect();
 	CDialog::OnTimer(nIDEvent);
 }
 
-BOOL FHClientDlg::StartConnect()
+void FHClientDlg::StartConnect()
 {
-
-	if (NULL != m_pcClientSocket) {
-		if (m_pcClientSocket->StartConnect("127.0.0.1")) {
-			m_cPromptText = _T("连接服务器成功。");
-			this->SetDlgItemText(IDC_STATIC2, m_cPromptText);
-			m_szConnectTimes = 0;
-
-			SendConfigInfo();
-
-			return TRUE;
-		}
+	int ret = m_cClientMgr.StartConnect("127.0.0.1");
+	if (FH_ERR_NOERROR != ret) {
+		m_cPromptText.Format("连接失败，请检查服务端状态,已经进行第 %d 次重新连接。", m_szConnectTimes);
+		this->SetDlgItemText(IDC_STATIC2, m_cPromptText);
+		m_bConnecting = FALSE;
+		SetTimer(FH_TIMER_CLIENT_CONNECT,1000,NULL);
+		AbleConnectFunction(false);
 	}
-	/*
-	if (NULL != m_pcClientSocket && !m_bConnecting) {
-		if (m_pcClientSocket->StartConnect()) {
-			m_cSocketFile = new CSocketFile(m_pcClientSocket);
-			// 输入CArchive
-			m_cArcIn = new CArchive(m_cSocketFile, CArchive::load);
-			// 输出CArchive
-			m_cArcOut = new CArchive(m_cSocketFile, CArchive::store);
-			m_bConnecting = TRUE;
-			KillTimer(FH_TIMER_CLIENT_CONNECT);
-			m_cPromptText = _T("连接服务器成功。");
-			this->SetDlgItemText(IDC_STATIC2, m_cPromptText);
-			m_szConnectTimes = 0;
-
-			SendConfigInfo();
-			return TRUE;
-		}
+	else {
+		m_cPromptText = "连接成功";
+		this->SetDlgItemText(IDC_STATIC2, m_cPromptText);
+		KillTimer(FH_TIMER_CLIENT_CONNECT);
+		m_szConnectTimes = 0;
+		m_bConnecting = TRUE;
+		AbleConnectFunction(false);
 	}
-	*/
-	return FALSE;
 }
 
-void FHClientDlg::ConnectServer()
+void FHClientDlg::OnBnClickedButtonConnServer()
 {
-	/*
-	if (NULL != m_pcClientSocket) {
-		if (!StartConnect()) {
-			if (WSAECONNREFUSED == m_pcClientSocket->GetLastError()) {
-				m_cPromptText.Format(_T("连接失败，请检查服务端状态。"));
-				this->SetDlgItemText(IDC_STATIC2, m_cPromptText);
-				SetTimer(FH_TIMER_CLIENT_CONNECT,500,NULL);
-			}
-			else {
-				// message error
-			}
-		}
-	}
-	*/
+	// TODO: 在此添加控件通知处理程序代码
+	//this->SetWindowText(m_cClientMgr.GetHostname());
+	StartConnect();
 }
 
 void FHClientDlg::OnBnClickedButtonDisconnServer()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	KillTimer(FH_TIMER_CLIENT_CONNECT);
+	m_cClientMgr.StopConnect();
+	AbleConnectFunction(true);
+	m_bConnecting = FALSE;
+	m_cPromptText = _T("已断开连接。");
+	this->SetDlgItemText(IDC_STATIC2, m_cPromptText);
+}
+
+LRESULT FHClientDlg::RecvDisconnect(WPARAM wParam,LPARAM lParam)
+{
+	AbleConnectFunction(true);
+	m_cClientMgr.StopConnect();
+	m_cPromptText = _T("服务端关闭，连接断开。");
+	this->SetDlgItemText(IDC_STATIC2, m_cPromptText);
+	return 0;
+}
+
+void FHClientDlg::AbleConnectFunction(bool flag)
+{
+	CButton* pConnectBtn = (CButton *)GetDlgItem(IDC_BUTTON1);
+	if(NULL != pConnectBtn) 
+	{ 
+		pConnectBtn->EnableWindow(flag); // True or False 
+	}
+
+	CEdit* pAddrEdit = (CEdit *)GetDlgItem(IDC_EDIT1);
+	if(NULL != pAddrEdit) 
+	{ 
+		pAddrEdit->EnableWindow(flag); // True or False 
+	}
+
+	CButton* pDisConnectBtn = (CButton *)GetDlgItem(IDC_BUTTON2);
+	if(NULL != pDisConnectBtn) 
+	{ 
+		pDisConnectBtn->EnableWindow(!flag); // True or False 
+	}
 }

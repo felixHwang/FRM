@@ -28,8 +28,6 @@ public:
 	BOOL CreateSocket(UINT uiPort = FH_DEFAULT_CONNECT_PORT);
 
 	BOOL StartConnect(CString cStrAddr = _T("127.0.0.1"));
-	void OnAccept(int nErrorCode);
-	void OnReceive(int nErrorCode);
 
 	void SendConfigInfoToSvr();
 

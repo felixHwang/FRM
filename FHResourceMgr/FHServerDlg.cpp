@@ -8,6 +8,7 @@
 #include "FHSocketThread.h"
 #include <vector>
 #include <string>
+#include "FHFileBrowser.h"
 
 
 // FHServerDlg 对话框
@@ -98,6 +99,11 @@ BOOL FHServerDlg::OnInitDialog()
 	
 	//this->SendMessage(FH_MSCMD_UPDATECONNECT);
 
+	FHFileBrowser* fileBR = new FHFileBrowser();
+	fileBR->Create(IDD_DIALOGFILEBR, this);
+	fileBR->ShowWindow(SW_SHOW);
+
+
 	return TRUE;
 }
 
@@ -151,6 +157,8 @@ void FHServerDlg::OnSelectOpen()
 {
 	// TODO: 在此添加命令处理程序代码
 	int i=0;
+
+
 }
 
 LRESULT FHServerDlg::RefleshConnectList(WPARAM wParam,LPARAM lParam)

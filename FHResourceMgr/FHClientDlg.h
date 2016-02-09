@@ -1,6 +1,7 @@
 #pragma once
 #include "afxwin.h"
 #include "FHMessage.h"
+#include "FHClientManager.h"
 
 class FHConnectSocket;
 
@@ -27,7 +28,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DISPATCH_MAP()
 	DECLARE_INTERFACE_MAP()
-	void OnExit();
+
 	void OnClose();
 	BOOL DestroyWindow();
 public:
@@ -35,22 +36,12 @@ public:
 
 	void OnTimer(UINT_PTR nIDEvent);
 
+	LRESULT RecvDisconnect(WPARAM wParam,LPARAM lParam);
+
 private:
-	void SendConfigInfo();
-	void InitConfigInfo();
-	void ConnectServer();
-	BOOL StartConnect();
+	void StartConnect();
 
-	FHConnectSocket* m_pcClientSocket;
-
-	CSocketFile* m_cSocketFile; // CSocketFile
-
-	CArchive* m_cArcIn; //  ‰»ÎCArchive
-
-	CArchive* m_cArcOut; //  ‰≥ˆCArchive
-
-	FH_MSG_MachineInfo m_cConfigInfo;
-
+	void AbleConnectFunction(bool flag = false);
 	FHMessage m_cMessage;
 
 	BOOL m_bConnecting;
@@ -61,4 +52,5 @@ public:
 private:
 	CString m_cPromptText;
 	UINT m_szConnectTimes;
+	FHClientManager m_cClientMgr;
 };

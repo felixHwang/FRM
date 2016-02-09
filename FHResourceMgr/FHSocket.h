@@ -38,7 +38,13 @@ public:
 
 	void DisplayErrMessageBox(CString str, int err);
 
+	int GetErrorCode();
+
+	void ClearError();
+
 protected:
+	void SetErrorCode(int errorCode);
+
 	BOOL ParseRecvMessage(const char* pcData);
 	SOCKET m_hSocket;
 	FH_SOCKET_TYPE m_eSocketType;
@@ -51,4 +57,5 @@ protected:
 	char* m_pcRecvBuffer;
 	char* m_pcRemainBuffer;
 	int m_iRemainPos;
+	int m_iErrorCode;
 };
