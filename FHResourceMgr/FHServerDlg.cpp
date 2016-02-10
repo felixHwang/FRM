@@ -15,11 +15,8 @@
 
 IMPLEMENT_DYNAMIC(FHServerDlg, CDialog)
 
-FHServerDlg* FHServerDlg::m_pcOwnerWin = NULL;
-
 FHServerDlg::FHServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(FHServerDlg::IDD, pParent)
-	, m_pcServerSocket(NULL)
 {
 	EnableAutomation();
 }
@@ -48,15 +45,13 @@ BOOL FHServerDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	m_pcOwnerWin = this;
-
 	m_cClientCtrlList.SetExtendedStyle(m_cClientCtrlList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
 
 	m_cClientCtrlList.InsertColumn(0, _TEXT("主机名"),LVCFMT_CENTER,100,0);
 	
 	m_cClientCtrlList.InsertColumn(1, _TEXT("IP地址"),LVCFMT_CENTER,100,1);
-	m_cClientCtrlList.InsertColumn(2, _TEXT("状态"),LVCFMT_LEFT,100,2);
+	m_cClientCtrlList.InsertColumn(2, _TEXT("识别码"),LVCFMT_LEFT,100,2);
 
 	
 	//m_cClientCtrlList.InsertItem(0, _T("Java"));   
@@ -151,18 +146,17 @@ void FHServerDlg::OnNMRClickListOfClient(NMHDR *pNMHDR, LRESULT *pResult)
 
 	// LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<NMITEMACTIVATE>(pNMHDR);
 	// TODO: 在此添加控件通知处理程序代码
-	*pResult = 0;
+	int x = m_cClientCtrlList.GetSelectionMark();
+	if (0 >= m_cClientCtrlList.GetSelectedCount())  
+	{  
+		return;
+	}
+
 	POINT pt;
-    GetCursorPos(&pt);
-    int x=m_cClientCtrlList.GetSelectionMark();
-     if (m_cClientCtrlList.GetSelectedCount() <= 0)  
-    {  
-        return;
-    }  
-    CMenu menu;
-	
-    menu.LoadMenu(IDR_MENU1);
-    CMenu * pop=menu.GetSubMenu(0);
+	GetCursorPos(&pt);
+	CMenu menu;
+	menu.LoadMenu(IDR_MENU1);
+	CMenu * pop=menu.GetSubMenu(0);
 	if(NULL != pop) {
 		pop->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,pt.x,pt.y,this);
 	}
@@ -171,9 +165,8 @@ void FHServerDlg::OnNMRClickListOfClient(NMHDR *pNMHDR, LRESULT *pResult)
 void FHServerDlg::OnSelectOpen()
 {
 	// TODO: 在此添加命令处理程序代码
-	int i=0;
 
-
+	//m_cClientCtrlList.GetFirstSelectedItemPosition();
 }
 
 LRESULT FHServerDlg::RefleshConnectList(WPARAM wParam,LPARAM lParam)
@@ -182,43 +175,39 @@ LRESULT FHServerDlg::RefleshConnectList(WPARAM wParam,LPARAM lParam)
 
 	int count = m_cClientCtrlList.GetItemCount();
 	m_cClientCtrlList.InsertItem(count, cInfo.hostname);
-	m_cClientCtrlList.SetItemText(count, 1, cInfo.address);   
-	m_cClientCtrlList.SetItemText(count, 2, "Connect");
+	m_cClientCtrlList.SetItemText(count, 1, cInfo.address);
+	m_cClientCtrlList.SetItemText(count, 2, cInfo.key);
 
 	FHFileBrowser* fileBR = new FHFileBrowser();
-	fileBR->Create(IDD_DIALOGFILEBR, this);
-	fileBR->ShowWindow(SW_SHOW);
+	if (NULL != fileBR) {
+		m_cFileBrList[cInfo.key] = fileBR;
+		fileBR->Create(IDD_DIALOGFILEBR, this);
+		fileBR->ShowWindow(SW_SHOW);
+	}
 
-	return ++count;
+	return 0;
 }
 
 LRESULT FHServerDlg::RecvClientDisconnect(WPARAM wParam,LPARAM lParam)
 {
 	FH_MachineInfo cInfo = *((FH_MachineInfo*)lParam);
 
-	int nIndex;
-	LVFINDINFO info;
-	info.flags = LVFI_PARTIAL|LVFI_STRING;
-	info.psz = cInfo.hostname.GetString();
+	int count = m_cClientCtrlList.GetItemCount();  
+	for(int i=0; i<count; i++)  
+	{  
+		if(cInfo.key == m_cClientCtrlList.GetItemText(i,2))  
+		{  
+			m_cClientCtrlList.DeleteItem(i);
+			const std::map<CString, FHFileBrowser*>::iterator it = m_cFileBrList.find(cInfo.key);
+			if (m_cFileBrList.end() != it) {
+				FHFileBrowser* fileBR = it->second;
+				m_cFileBrList.erase(it);
+				fileBR->DestroyWindow();
+				delete fileBR;
+			}
+			break;
+		}  
+	}  
 
-	// Delete all of the items that begin with the string.
-	if (-1 != (nIndex = m_cClientCtrlList.FindItem(&info)))
-	{
-		m_cClientCtrlList.DeleteItem(nIndex);
-	}
 	return 0;
 }
-
-/*
-BOOL FHServerDlg::RegisterClientThread(FHSocketThread* pThread)
-{
-	if (NULL != pThread) {
-		pThread->m_pcMainDlg = this;
-		m_cCsSection.Lock();	
-		m_cThreadList.push_back(pThread);
-		m_cCsSection.Unlock();
-		return TRUE;
-	}
-	return FALSE;
-}
-*/

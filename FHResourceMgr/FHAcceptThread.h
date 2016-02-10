@@ -3,11 +3,13 @@
 #include<map>
 #include <winsock2.h>
 #include "FHBaseThread.h"
+#include "FHPublicDefine.h"
 
 // FHAcceptThread
 
 class FHCommThread;
 class FHAcceptSocket;
+class FHCommSocket;
 
 class FHAcceptThread :/* public FHBaseThread,*/public CWinThread
 {
@@ -29,13 +31,21 @@ public:
 protected:
 	DECLARE_MESSAGE_MAP()
 
+	struct FH_CommChannelDetail {
+		FH_MachineInfo machineInfo;
+		FHCommThread* pcCommThread;
+		FHCommSocket* pcCommSocket;
+	};
+
 
 	BOOL m_bQuit;
 	SOCKET m_hSocket;
 	FHSocket* m_pcSocket;
 	FHAcceptSocket* m_pcAcceptSocket;
 
-	std::map<SOCKET,FHCommThread*> m_cVecConnectThead;
+	UINT m_szKeyIndex;
+
+	std::map<CString,FH_CommChannelDetail> m_cVecConnectDetail;
 };
 
 

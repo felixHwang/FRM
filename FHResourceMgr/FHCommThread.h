@@ -4,7 +4,7 @@
 #include "FHPublicDefine.h"
 
 class FHAcceptThread;
-class FHSocket;
+class FHCommSocket;
 class FHFileBrowser;
 // FHCommThread
 
@@ -23,20 +23,18 @@ public:
 
 	void OnCallBack(WPARAM wParam,LPARAM lParam);
 
-	virtual void RegisterSocket(const SOCKET& hSocket);
-
+	void RegisterSocket(FHCommSocket* pcSocket);
 	virtual void UnRegisterSocket();
 
+	void SetIdentityKey(CString key);
 protected:
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DISPATCH_MAP()
 	DECLARE_INTERFACE_MAP()
-
+	
 	BOOL m_bQuit;
-	SOCKET m_hSocket;
-	FHSocket* m_pcSocket;
 	FH_MachineInfo m_cClientInfo;
-	FHFileBrowser* m_pcFileBrowserDlg;
+	FHCommSocket* m_pcCommSocket;
 };
 
 

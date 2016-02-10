@@ -68,44 +68,41 @@ BEGIN_INTERFACE_MAP(FHCommThread, CWinThread)
 	INTERFACE_PART(FHCommThread, IID_IFHCommThread, Dispatch)
 END_INTERFACE_MAP()
 
-void FHCommThread::RegisterSocket(const SOCKET& hSocket)
+void FHCommThread::SetIdentityKey(CString key)
 {
-	m_hSocket = hSocket;
-	m_pcSocket = new FHCommSocket(hSocket);
+	m_cClientInfo.key = key;
+}
+
+void FHCommThread::RegisterSocket(FHCommSocket* pcSocket)
+{
+	if (NULL != pcSocket) {
+		m_pcCommSocket = pcSocket;
+	}
 }
 
 void FHCommThread::UnRegisterSocket()
 {
-
+	m_pcCommSocket = NULL;
 }
 
 void FHCommThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 {
 	FHMessage cMsg;
 	while (!m_bQuit) {
-		if (NULL != m_pcSocket) {
-			if (m_pcSocket->RecvMessage()) {
+		if (NULL != m_pcCommSocket) {
+			if (m_pcCommSocket->RecvMessage()) {
 
-				while (m_pcSocket->PopMessage(cMsg)) {
+				while (m_pcCommSocket->PopMessage(cMsg)) {
 					if (FH_COMM_MACHINEINFO == cMsg.GetCommandID()) {
 						m_cClientInfo.hostname = cMsg.GetMachineInfo().hostname;
-						m_cClientInfo.address = m_pcSocket->GetPeerName();
+						m_cClientInfo.address = m_pcCommSocket->GetPeerName();
 						int ret = AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_UPDATECONNECT,0,(LPARAM)&m_cClientInfo);
-
-						/*m_pcFileBrowserDlg = new FHFileBrowser();
-						m_pcFileBrowserDlg->Create(IDD_DIALOGFILEBR);
-						m_pcFileBrowserDlg->ShowWindow(SW_SHOW);*/
 					}
 				}
 			}
 			else {
-				if (WSAECONNRESET == m_pcSocket->GetErrorCode()) {
+				if (WSAECONNRESET == m_pcCommSocket->GetErrorCode()) {
 					AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_CLIENTDISCONNECT, 0, (LPARAM)&m_cClientInfo);
-					if (NULL != m_pcFileBrowserDlg) {
-						m_pcFileBrowserDlg->DestroyWindow();
-						delete m_pcFileBrowserDlg;
-						m_pcFileBrowserDlg = NULL;
-					}
 					break;
 				}
 			}

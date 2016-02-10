@@ -7,12 +7,14 @@
 #include "FHCommThread.h"
 #include "FHSocket.h"
 #include "FHAcceptSocket.h"
+#include "FHCommSocket.h"
 
 // FHAcceptThread
 
 IMPLEMENT_DYNCREATE(FHAcceptThread, CWinThread)
 
 FHAcceptThread::FHAcceptThread()
+:m_szKeyIndex(0)
 {
 	EnableAutomation();
 }
@@ -53,46 +55,42 @@ void FHAcceptThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 
 		if (NULL != m_pcAcceptSocket) {
 			if(m_pcAcceptSocket->Accept(hSocket, (SOCKADDR *)&sAddr, &nAddrLen)) {
-				FHCommThread* pcThread = (FHCommThread*)AfxBeginThread(RUNTIME_CLASS(FHCommThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
-				if (NULL != pcThread) {
-					pcThread->RegisterSocket(hSocket);
 
-					// do some thing
+				FH_CommChannelDetail cChannelDetail;
+				cChannelDetail.pcCommSocket = new FHCommSocket(hSocket);
+				if (NULL != cChannelDetail.pcCommSocket) {
+					cChannelDetail.pcCommThread = (FHCommThread*)AfxBeginThread(RUNTIME_CLASS(FHCommThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
+					if (NULL != cChannelDetail.pcCommThread) {
+						CString strKey;
+						strKey.Format("%u", m_szKeyIndex);
+						while (m_cVecConnectDetail.end() != m_cVecConnectDetail.find(strKey)) {
+							++m_szKeyIndex;
+							strKey.Format("%u", m_szKeyIndex);	// format twice ?
+						}
+						
+						cChannelDetail.machineInfo.key = strKey;
+						m_cVecConnectDetail[strKey] = cChannelDetail;
+						cChannelDetail.pcCommThread->RegisterSocket(cChannelDetail.pcCommSocket);
+						cChannelDetail.pcCommThread->SetIdentityKey(strKey);
+						++m_szKeyIndex;
 
-					m_cVecConnectThead[hSocket] = pcThread;
+						cChannelDetail.pcCommThread->ResumeThread();
 
-					pcThread->ResumeThread();
+						cChannelDetail.pcCommThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTCOMM, 0);
+					}
+					else {
+						cChannelDetail.pcCommSocket->CloseSocket();
+						delete cChannelDetail.pcCommSocket;
+					}
+				}
 
-					pcThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTCOMM, 0);
+					
 				}
 			}
 			else {
 				m_pcAcceptSocket->DisplayErrMessageBox("接收客户端连接失败", m_pcAcceptSocket->GetErrorCode());
 			}
 		}
-
-		//if (NULL != m_pcSocket) {
-		//	hSocket = accept(m_hSocket, (sockaddr *)&sAddr, &nAddrLen); 
-		//	/*m_pcSocket->Accept((SOCKADDR *)&sAddr, &nAddrLen);*/
-		//	if (INVALID_SOCKET != hSocket) {
-		//		FHCommThread* pcThread = (FHCommThread*)AfxBeginThread(RUNTIME_CLASS(FHCommThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
-		//		if (NULL != pcThread) {
-		//			pcThread->RegisterSocket(hSocket);
-		//			
-		//			// do some thing
-
-		//			m_cVecConnectThead[hSocket] = pcThread;
-
-		//			pcThread->ResumeThread();
-
-		//			pcThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTCOMM, 0);
-		//		}
-		//	}
-		//	else {
-		//		int err = GetLastError();
-		//	}
-		//}
-	} // while
 }
 
 void FHAcceptThread::RegisterSocket(const SOCKET& hSocket)

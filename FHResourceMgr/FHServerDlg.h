@@ -2,7 +2,7 @@
 #include "afxcmn.h"
 
 #include "afxmt.h"
-#include <list>
+#include <map>
 #include "FHServerManager.h"
 //#include <afxwin.h>
 //#include "FHSocketThread.h"
@@ -12,6 +12,7 @@
 
 class FHAcceptThread;
 class FHAcceptSocket;
+class FHFileBrowser;
 
 class FHServerDlg : public CDialog
 {
@@ -39,21 +40,10 @@ public:
 
 	afx_msg LRESULT RefleshConnectList(WPARAM wParam,LPARAM lParam);
 
-	static FHServerDlg* GetOwnerWin() {return m_pcOwnerWin;}
-
-	//BOOL RegisterClientThread(FHSocketThread* pThread);
 private:
 	CListCtrl m_cClientCtrlList;
-	CCriticalSection m_cCsSection; // 线程池锁
-	FHAcceptSocket* m_pcServerSocket;
 
-	static FHServerDlg *m_pcOwnerWin;
-
-	
-
-	//std::list<FHSocketThread*> m_cThreadList; // 线程池
-
-	UINT m_szThreadIndex; // 线程计数器
+	std::map<CString, FHFileBrowser*> m_cFileBrList;
 
 	FHServerManager m_cServerManager;
 

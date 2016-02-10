@@ -18,7 +18,7 @@
 #define FH_FILETYPE_NORMAL (FILE_ATTRIBUTE_NORMAL)
 
 struct FH_MachineInfo {
-	int key;
+	CString key;
 	CString hostname;
 	CString address;
 };
