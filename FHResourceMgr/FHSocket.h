@@ -26,7 +26,7 @@ public:
 
 	virtual BOOL CloseSocket();
 
-	virtual SOCKET Accept(sockaddr* addr, int* addrlen);
+	virtual bool Accept(SOCKET& socket, sockaddr* addr, int* addrlen);
 
 	BOOL SendMessage(const FHMessage& msg);
 

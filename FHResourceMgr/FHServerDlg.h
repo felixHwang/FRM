@@ -3,6 +3,7 @@
 
 #include "afxmt.h"
 #include <list>
+#include "FHServerManager.h"
 //#include <afxwin.h>
 //#include "FHSocketThread.h"
 
@@ -54,6 +55,9 @@ private:
 
 	UINT m_szThreadIndex; // 线程计数器
 
+	FHServerManager m_cServerManager;
+
 public:
 	afx_msg void OnSelectOpen();
+	LRESULT RecvClientDisconnect(WPARAM wParam,LPARAM lParam);
 };

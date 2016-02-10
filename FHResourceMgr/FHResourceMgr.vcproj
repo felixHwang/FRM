@@ -262,6 +262,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FHServerManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FHSocket.cpp"
 				>
 			</File>
@@ -369,6 +373,10 @@
 			</File>
 			<File
 				RelativePath=".\FHServerDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FHServerManager.h"
 				>
 			</File>
 			<File

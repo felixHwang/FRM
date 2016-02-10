@@ -1,9 +1,11 @@
 #pragma once
 
 #include <winsock2.h>
+#include "FHPublicDefine.h"
 
 class FHAcceptThread;
 class FHSocket;
+class FHFileBrowser;
 // FHCommThread
 
 class FHCommThread : public CWinThread
@@ -33,6 +35,8 @@ protected:
 	BOOL m_bQuit;
 	SOCKET m_hSocket;
 	FHSocket* m_pcSocket;
+	FH_MachineInfo m_cClientInfo;
+	FHFileBrowser* m_pcFileBrowserDlg;
 };
 
 

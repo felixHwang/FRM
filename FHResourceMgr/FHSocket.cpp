@@ -85,23 +85,22 @@ BOOL FHSocket::StartConnect(CString cStrAddr /*= _T("127.0.0.1")*/)
 
 
 	if (FH_SOCKET_TYPE_SERVER == m_eSocketType) {
-
-		bind(m_hSocket, (SOCKADDR*)&socketAddr, sizeof(SOCKADDR));
-		int error = WSAGetLastError();
-
+		ClearError();
+		int retCode = bind(m_hSocket, (SOCKADDR*)&socketAddr, sizeof(SOCKADDR));
+		
 		if(SOCKET_ERROR == listen(m_hSocket, 10))
 		{
-			int error = WSAGetLastError();
+			SetErrorCode(GetLastError());
 			return FALSE;
 		}
 
-		FHAcceptThread* pcThread = (FHAcceptThread*)AfxBeginThread(RUNTIME_CLASS(FHAcceptThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
+		/*FHAcceptThread* pcThread = (FHAcceptThread*)AfxBeginThread(RUNTIME_CLASS(FHAcceptThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
 
 		pcThread->RegisterSocket(m_hSocket);
 
 		pcThread->ResumeThread();
 
-		pcThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTACCEPT, 0);
+		pcThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTACCEPT, 0);*/
 	}
 	else if (FH_SOCKET_TYPE_CLIENT == m_eSocketType) {
 		ClearError();
@@ -256,9 +255,17 @@ BOOL FHSocket::RecvMessage()
 	return TRUE;
 }
 
-SOCKET FHSocket::Accept(sockaddr* addr, int* addrlen)
+bool FHSocket::Accept(SOCKET& socket, sockaddr* addr, int* addrlen)
 {
-	return accept(m_hSocket, addr, addrlen);
+
+	socket = accept(m_hSocket, addr, addrlen);
+	if (INVALID_SOCKET != socket) {
+		return true;
+	}
+	else {
+		SetErrorCode(GetLastError());
+		return false;
+	}
 }
 
 CString FHSocket::GetPeerName()

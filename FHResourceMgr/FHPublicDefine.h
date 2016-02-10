@@ -8,6 +8,7 @@
 #define FH_MSCMD_STARTCOMM 0X0004
 #define FH_MSCMD_UPDATECONNECT		(WM_USER+1)
 #define FH_MSCMD_SERVERDISCONNECT	(WM_USER+2)
+#define FH_MSCMD_CLIENTDISCONNECT	(WM_USER+3)
 
 #define FH_COMM_MACHINEINFO	0X09000001
 
@@ -17,6 +18,7 @@
 #define FH_FILETYPE_NORMAL (FILE_ATTRIBUTE_NORMAL)
 
 struct FH_MachineInfo {
+	int key;
 	CString hostname;
 	CString address;
 };

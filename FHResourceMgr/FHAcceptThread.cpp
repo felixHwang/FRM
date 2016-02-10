@@ -50,13 +50,13 @@ void FHAcceptThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 	{
 		nAddrLen = sizeof(SOCKADDR_IN);
 		memset(&sAddr, 0, nAddrLen);
-		if (NULL != m_pcSocket) {
-			hSocket = accept(m_hSocket, (sockaddr *)&sAddr, &nAddrLen); /*m_pcSocket->Accept((SOCKADDR *)&sAddr, &nAddrLen);*/
-			if (INVALID_SOCKET != hSocket) {
+
+		if (NULL != m_pcAcceptSocket) {
+			if(m_pcAcceptSocket->Accept(hSocket, (SOCKADDR *)&sAddr, &nAddrLen)) {
 				FHCommThread* pcThread = (FHCommThread*)AfxBeginThread(RUNTIME_CLASS(FHCommThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
 				if (NULL != pcThread) {
 					pcThread->RegisterSocket(hSocket);
-					
+
 					// do some thing
 
 					m_cVecConnectThead[hSocket] = pcThread;
@@ -67,9 +67,31 @@ void FHAcceptThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 				}
 			}
 			else {
-				int err = GetLastError();
+				m_pcAcceptSocket->DisplayErrMessageBox("接收客户端连接失败", m_pcAcceptSocket->GetErrorCode());
 			}
 		}
+
+		//if (NULL != m_pcSocket) {
+		//	hSocket = accept(m_hSocket, (sockaddr *)&sAddr, &nAddrLen); 
+		//	/*m_pcSocket->Accept((SOCKADDR *)&sAddr, &nAddrLen);*/
+		//	if (INVALID_SOCKET != hSocket) {
+		//		FHCommThread* pcThread = (FHCommThread*)AfxBeginThread(RUNTIME_CLASS(FHCommThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
+		//		if (NULL != pcThread) {
+		//			pcThread->RegisterSocket(hSocket);
+		//			
+		//			// do some thing
+
+		//			m_cVecConnectThead[hSocket] = pcThread;
+
+		//			pcThread->ResumeThread();
+
+		//			pcThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTCOMM, 0);
+		//		}
+		//	}
+		//	else {
+		//		int err = GetLastError();
+		//	}
+		//}
 	} // while
 }
 
@@ -79,9 +101,16 @@ void FHAcceptThread::RegisterSocket(const SOCKET& hSocket)
 	m_pcSocket = new FHAcceptSocket(hSocket);
 }
 
+void FHAcceptThread::RegisterSocket(FHAcceptSocket* pcSocket)
+{
+	if (NULL != pcSocket) {
+		m_pcAcceptSocket = pcSocket;
+	}
+}
+
 void FHAcceptThread::UnRegisterSocket()
 {
-
+	m_pcAcceptSocket = NULL;
 }
 
 // FHAcceptThread 消息处理程序

@@ -23,7 +23,7 @@ public:
 	void OnCallBack(WPARAM wParam,LPARAM lParam);
 
 	virtual void RegisterSocket(const SOCKET& hSocket);
-
+	void RegisterSocket(FHAcceptSocket* pcSocket);
 	virtual void UnRegisterSocket();
 
 protected:
@@ -33,6 +33,7 @@ protected:
 	BOOL m_bQuit;
 	SOCKET m_hSocket;
 	FHSocket* m_pcSocket;
+	FHAcceptSocket* m_pcAcceptSocket;
 
 	std::map<SOCKET,FHCommThread*> m_cVecConnectThead;
 };

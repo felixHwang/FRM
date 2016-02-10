@@ -104,6 +104,8 @@ BOOL FHClientDlg::OnInitDialog()
 
 	AbleConnectFunction(true);
 
+	OnBnClickedButtonConnServer();
+
 	return TRUE;
 }
 

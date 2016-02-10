@@ -118,7 +118,7 @@ bool FHFileBrowser::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& 
 		dotInfo.filename = "..";
 		fileList.AddTail(dotInfo);
 
-		while (0 != searchFile.FindNextFile()) {
+		while (searchFile.FindNextFile()) {
 			
 			if (searchFile.IsDots()) {
 				continue;

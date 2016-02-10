@@ -8,6 +8,7 @@
 #include "FHMessage.h"
 #include "FHCommSocket.h"
 #include "FHServerDlg.h"
+#include "FHFileBrowser.h"
 #include <vector>
 #include <string>
 
@@ -87,15 +88,30 @@ void FHCommThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 
 				while (m_pcSocket->PopMessage(cMsg)) {
 					if (FH_COMM_MACHINEINFO == cMsg.GetCommandID()) {
-						FH_MachineInfo info;
-						info.hostname = cMsg.GetMachineInfo().hostname;
-						info.address = m_pcSocket->GetPeerName();
-						int ret = AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_UPDATECONNECT,0,(LPARAM)&info);
+						m_cClientInfo.hostname = cMsg.GetMachineInfo().hostname;
+						m_cClientInfo.address = m_pcSocket->GetPeerName();
+						int ret = AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_UPDATECONNECT,0,(LPARAM)&m_cClientInfo);
+
+						/*m_pcFileBrowserDlg = new FHFileBrowser();
+						m_pcFileBrowserDlg->Create(IDD_DIALOGFILEBR);
+						m_pcFileBrowserDlg->ShowWindow(SW_SHOW);*/
 					}
+				}
+			}
+			else {
+				if (WSAECONNRESET == m_pcSocket->GetErrorCode()) {
+					AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_CLIENTDISCONNECT, 0, (LPARAM)&m_cClientInfo);
+					if (NULL != m_pcFileBrowserDlg) {
+						m_pcFileBrowserDlg->DestroyWindow();
+						delete m_pcFileBrowserDlg;
+						m_pcFileBrowserDlg = NULL;
+					}
+					break;
 				}
 			}
 		}
 	}
 }
+
 
 // FHCommThread 消息处理程序

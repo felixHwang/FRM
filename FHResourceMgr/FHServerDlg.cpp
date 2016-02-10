@@ -21,22 +21,7 @@ FHServerDlg::FHServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(FHServerDlg::IDD, pParent)
 	, m_pcServerSocket(NULL)
 {
-
 	EnableAutomation();
-
-
-
-	TCHAR tstr1[] = _TEXT("TEST1");
-	TCHAR tstr2[] = _TEXT("TEST2");
-	TCHAR tstr3[] = _TEXT("TEST3");
-	/*
-	m_cClientList.InsertString(0,tstr1);
-	m_cClientList.InsertString(1,tstr2);
-	m_cClientList.InsertString(2,tstr3);
-	*/
-
-
-
 }
 
 FHServerDlg::~FHServerDlg()
@@ -73,35 +58,64 @@ BOOL FHServerDlg::OnInitDialog()
 	m_cClientCtrlList.InsertColumn(1, _TEXT("IPµØÖ·"),LVCFMT_CENTER,100,1);
 	m_cClientCtrlList.InsertColumn(2, _TEXT("×´Ì¬"),LVCFMT_LEFT,100,2);
 
-	/*
-	m_cClientCtrlList.InsertItem(0, _T("Java"));   
-    m_cClientCtrlList.SetItemText(0, 1, _T("192.168.0.1"));   
-    m_cClientCtrlList.SetItemText(0, 2, _T("Connect"));
+	
+	//m_cClientCtrlList.InsertItem(0, _T("Java"));   
+ //   m_cClientCtrlList.SetItemText(0, 1, _T("192.168.0.1"));   
+ //   m_cClientCtrlList.SetItemText(0, 2, _T("Connect"));
 
-	m_cClientCtrlList.InsertItem(1, _T("Pyt"));   
-	m_cClientCtrlList.SetItemText(1, 1, _T("192.168.0.2"));   
-	m_cClientCtrlList.SetItemText(1, 2, _T("Connect"));
+	//m_cClientCtrlList.InsertItem(1, _T("Pyt"));   
+	//m_cClientCtrlList.SetItemText(1, 1, _T("192.168.0.2"));   
+	//m_cClientCtrlList.SetItemText(1, 2, _T("Connect"));
 
-	m_cClientCtrlList.InsertItem(2, _T("Cs"));   
-	m_cClientCtrlList.SetItemText(2, 1, _T("192.168.0.3"));   
-	m_cClientCtrlList.SetItemText(2, 2, _T("Disconnect"));
-*/
-	if (NULL == m_pcServerSocket)
+	//m_cClientCtrlList.InsertItem(2, _T("Cs"));   
+	//m_cClientCtrlList.SetItemText(2, 1, _T("192.168.0.3"));   
+	//m_cClientCtrlList.SetItemText(2, 2, _T("Disconnect"));
+
+
+	//LVFINDINFO info;
+	//POINT  pos1;
+	//info.flags = LVFI_PARTIAL|LVFI_STRING;
+	//info.psz = "Cs";
+	//int nIndex2 = m_cClientCtrlList.FindItem(&info);
+	//m_cClientCtrlList.GetItemPosition(nIndex2, &pos1);
+
+
+	//int nIndex1;
+	//info.flags = LVFI_PARTIAL|LVFI_STRING;
+	//info.psz = "Pyt";
+
+	//// Delete all of the items that begin with the string.
+	//if (-1 != (nIndex1 = m_cClientCtrlList.FindItem(&info)))
+	//{
+	//	m_cClientCtrlList.DeleteItem(nIndex1);
+	//}
+
+
+	//info.flags = LVFI_PARTIAL|LVFI_STRING;
+	//info.psz = "Cs";
+	//int nIndex3 = m_cClientCtrlList.FindItem(&info);
+	//POINT  pos2;
+	//m_cClientCtrlList.get
+	//m_cClientCtrlList.GetItemPosition(nIndex3, &pos2);
+
+
+	m_cServerManager.StartListen("127.0.0.1");
+	/*if (NULL == m_pcServerSocket)
 	{
 		m_pcServerSocket = new FHAcceptSocket();
 		if (NULL != m_pcServerSocket) {
 			m_pcServerSocket->CreateSocket();
 			m_pcServerSocket->StartConnect();
 		}
-	}
+	}*/
 
 	
 	
 	//this->SendMessage(FH_MSCMD_UPDATECONNECT);
 
-	FHFileBrowser* fileBR = new FHFileBrowser();
-	fileBR->Create(IDD_DIALOGFILEBR, this);
-	fileBR->ShowWindow(SW_SHOW);
+	//FHFileBrowser* fileBR = new FHFileBrowser();
+	//fileBR->Create(IDD_DIALOGFILEBR, this);
+	//fileBR->ShowWindow(SW_SHOW);
 
 
 	return TRUE;
@@ -111,6 +125,7 @@ BEGIN_MESSAGE_MAP(FHServerDlg, CDialog)
 	ON_NOTIFY(NM_RCLICK, IDC_LIST2, &FHServerDlg::OnNMRClickListOfClient)
 	ON_COMMAND(ID_1_32774, &FHServerDlg::OnSelectOpen)
 	ON_MESSAGE(FH_MSCMD_UPDATECONNECT, RefleshConnectList)
+	ON_MESSAGE(FH_MSCMD_CLIENTDISCONNECT, RecvClientDisconnect)
 END_MESSAGE_MAP()
 
 BEGIN_DISPATCH_MAP(FHServerDlg, CDialog)
@@ -165,14 +180,33 @@ LRESULT FHServerDlg::RefleshConnectList(WPARAM wParam,LPARAM lParam)
 {
 	FH_MachineInfo cInfo = *((FH_MachineInfo*)lParam);
 
-	CString s1 = cInfo.address;
-
 	int count = m_cClientCtrlList.GetItemCount();
 	m_cClientCtrlList.InsertItem(count, cInfo.hostname);
 	m_cClientCtrlList.SetItemText(count, 1, cInfo.address);   
 	m_cClientCtrlList.SetItemText(count, 2, "Connect");
 
+	FHFileBrowser* fileBR = new FHFileBrowser();
+	fileBR->Create(IDD_DIALOGFILEBR, this);
+	fileBR->ShowWindow(SW_SHOW);
+
 	return ++count;
+}
+
+LRESULT FHServerDlg::RecvClientDisconnect(WPARAM wParam,LPARAM lParam)
+{
+	FH_MachineInfo cInfo = *((FH_MachineInfo*)lParam);
+
+	int nIndex;
+	LVFINDINFO info;
+	info.flags = LVFI_PARTIAL|LVFI_STRING;
+	info.psz = cInfo.hostname.GetString();
+
+	// Delete all of the items that begin with the string.
+	if (-1 != (nIndex = m_cClientCtrlList.FindItem(&info)))
+	{
+		m_cClientCtrlList.DeleteItem(nIndex);
+	}
+	return 0;
 }
 
 /*
