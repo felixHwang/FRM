@@ -242,6 +242,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FHFile.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FHFileBrowser.cpp"
 				>
 			</File>
@@ -349,6 +353,10 @@
 			</File>
 			<File
 				RelativePath=".\FHDiagLogin.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FHFile.h"
 				>
 			</File>
 			<File

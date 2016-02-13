@@ -35,7 +35,7 @@ int FHServerManager::StartListen(const CString cStrAddr, const unsigned int port
 			m_pcAcceptThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTCONNECT, 0);
 		}
 	}
-
+	return FH_ERR_NOERROR;
 }
 
 BOOL FHServerManager::StopListen()

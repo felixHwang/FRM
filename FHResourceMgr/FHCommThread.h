@@ -26,7 +26,7 @@ public:
 	void RegisterSocket(FHCommSocket* pcSocket);
 	virtual void UnRegisterSocket();
 
-	void SetIdentityKey(CString key);
+	void SetIdentifyKey(CString key);
 protected:
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DISPATCH_MAP()

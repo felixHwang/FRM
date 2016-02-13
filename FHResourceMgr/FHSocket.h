@@ -10,7 +10,6 @@ enum FH_SOCKET_TYPE {
 	FH_SOCKET_TYPE_NORMOL
 };
 
-class FHWinThread;
 
 class FHSocket
 {
@@ -50,9 +49,10 @@ protected:
 	FH_SOCKET_TYPE m_eSocketType;
 	CString m_cAddr;
 	UINT m_szPort;
-	FHWinThread* m_pcWinThread;
 
 	CList<FHMessage> m_cListMsg;
+	FHMessage m_cLastMsg;
+	BOOL m_bLastMsg;	// message complete or not
 
 	char* m_pcRecvBuffer;
 	char* m_pcRemainBuffer;

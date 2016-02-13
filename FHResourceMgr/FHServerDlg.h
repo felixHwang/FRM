@@ -50,4 +50,6 @@ private:
 public:
 	afx_msg void OnSelectOpen();
 	LRESULT RecvClientDisconnect(WPARAM wParam,LPARAM lParam);
+	LRESULT RefleshFileInfo(WPARAM wParam,LPARAM lParam);
+	LRESULT RequestFileInfo(WPARAM wParam,LPARAM lParam);
 };

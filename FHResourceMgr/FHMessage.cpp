@@ -8,6 +8,8 @@
 // FHMessage
 
 FHMessage::FHMessage()
+:m_bHasConfigInfo(FALSE)
+,m_bHasFileInfo(FALSE)
 {
 }
 
@@ -55,8 +57,44 @@ void FHMessage::SerializeConfigData(CArchive& ar)
 FHMessage& FHMessage::operator=(const FHMessage& cMsg)
 {
 	this->SetCommandID(cMsg.GetCommandID());
-	this->SetMachineInfo(cMsg.GetMachineInfo());
+	if (cMsg.m_bHasConfigInfo) {
+		this->SetMachineInfo(cMsg.GetMachineInfo());
+	}
+	if (cMsg.m_bHasFileInfo) {
+		this->SetFileInfo(cMsg.GetFileInfo());
+	}
 	return *this;
 }
 
-// FHMessage ³ÉÔ±º¯Êý
+const FH_MSG_FileInfo FHMessage::GetFileInfo() const
+{
+	return m_cFileInfo;
+
+}
+
+void FHMessage::SetFileInfo(const FH_MSG_FileInfo& fileInfo)
+{
+	m_bHasFileInfo = TRUE;
+	m_cFileInfo = fileInfo;
+}
+
+void FHMessage::Clear()
+{
+	m_bHasFileInfo = FALSE;
+	m_bHasConfigInfo = FALSE;
+
+	m_cFileInfo.Clear();
+	m_cConfigInfo.Clear();
+
+}
+
+void FHMessage::MergeFileInfo(const FHMessage& cMsg)
+{
+	if (cMsg.m_bHasFileInfo) {
+		this->m_bHasFileInfo = TRUE;
+		for (size_t i=0; i<cMsg.m_cFileInfo.fileItemVec.size(); ++i) {
+			m_cFileInfo.fileItemVec.push_back(cMsg.m_cFileInfo.fileItemVec[i]);
+		}
+	}
+	
+}

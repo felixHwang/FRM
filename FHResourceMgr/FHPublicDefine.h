@@ -9,8 +9,11 @@
 #define FH_MSCMD_UPDATECONNECT		(WM_USER+1)
 #define FH_MSCMD_SERVERDISCONNECT	(WM_USER+2)
 #define FH_MSCMD_CLIENTDISCONNECT	(WM_USER+3)
+#define FH_MSCMD_UPFILEINFO			(WM_USER+4)
+#define FH_MSCMD_REQFILEINFO		(WM_USER+5)
 
 #define FH_COMM_MACHINEINFO	0X09000001
+#define FH_COMM_FILEINFO	0X09000002
 
 #define FH_ERR_NOERROR	(0)
 
@@ -24,7 +27,8 @@ struct FH_MachineInfo {
 };
 
 struct FH_FileInfo {
-	int filetype;
+	int fileType;
+	int fileSize;
 	CString filename;
-	CTime fileCreateTime;
+	CString fileCreateTime;
 };

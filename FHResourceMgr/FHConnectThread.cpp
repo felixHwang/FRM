@@ -89,7 +89,7 @@ void FHConnectThread::UnRegisterSocket()
 void FHConnectThread::StopThread()
 {
 	m_bQuit = TRUE;
-	DWORD dwCode;
+	DWORD dwCode = 0;
 	TerminateThread(this->m_hThread, dwCode);
 	CloseHandle(this->m_hThread);
 }

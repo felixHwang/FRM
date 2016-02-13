@@ -71,7 +71,7 @@ void FHAcceptThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 						cChannelDetail.machineInfo.key = strKey;
 						m_cVecConnectDetail[strKey] = cChannelDetail;
 						cChannelDetail.pcCommThread->RegisterSocket(cChannelDetail.pcCommSocket);
-						cChannelDetail.pcCommThread->SetIdentityKey(strKey);
+						cChannelDetail.pcCommThread->SetIdentifyKey(strKey);
 						++m_szKeyIndex;
 
 						cChannelDetail.pcCommThread->ResumeThread();

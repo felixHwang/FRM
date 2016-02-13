@@ -121,6 +121,8 @@ BEGIN_MESSAGE_MAP(FHServerDlg, CDialog)
 	ON_COMMAND(ID_1_32774, &FHServerDlg::OnSelectOpen)
 	ON_MESSAGE(FH_MSCMD_UPDATECONNECT, RefleshConnectList)
 	ON_MESSAGE(FH_MSCMD_CLIENTDISCONNECT, RecvClientDisconnect)
+	ON_MESSAGE(FH_MSCMD_UPFILEINFO, RefleshFileInfo)
+	ON_MESSAGE(FH_MSCMD_REQFILEINFO, RequestFileInfo)
 END_MESSAGE_MAP()
 
 BEGIN_DISPATCH_MAP(FHServerDlg, CDialog)
@@ -209,5 +211,48 @@ LRESULT FHServerDlg::RecvClientDisconnect(WPARAM wParam,LPARAM lParam)
 		}  
 	}  
 
+	return 0;
+}
+
+
+LRESULT FHServerDlg::RefleshFileInfo(WPARAM wParam,LPARAM lParam)
+{
+	UINT keyValue = wParam;
+	CString key;
+	key.Format("%u", keyValue);
+	std::map<CString, FHFileBrowser*>::iterator it = m_cFileBrList.find(key);
+	if (it == m_cFileBrList.end()) {
+		return -1;
+	}
+
+	FHFileBrowser* pcFileBrowser = it->second;
+	if (NULL == pcFileBrowser) {
+		return -1;
+	}
+
+	FHMessage cMsg =  *((FHMessage*)lParam);
+	CList<FH_FileInfo> infoList;
+	FH_FileInfo dots;
+	dots.filename = "..";
+	dots.fileType = FH_FILETYPE_DIR;
+	infoList.AddTail(dots);
+	FH_MSG_FileInfo fileInfo = cMsg.GetFileInfo();
+	for (size_t i=0; i<fileInfo.fileItemVec.size(); ++i) {
+		FH_FileInfo item;
+		item.fileType = fileInfo.fileItemVec[i].fileType;
+		item.fileSize = fileInfo.fileItemVec[i].fileSize;
+		item.filename = fileInfo.fileItemVec[i].filename;
+		item.fileCreateTime = fileInfo.fileItemVec[i].fileCreateTime;
+		infoList.AddTail(item);
+	}
+	pcFileBrowser->DisplayFileList(infoList, false);
+	pcFileBrowser->SetEditFilePath(fileInfo.filePath, false);
+	
+	return 0;
+}
+
+LRESULT FHServerDlg::RequestFileInfo(WPARAM wParam,LPARAM lParam)
+{
+	CString filePath = *(CString*)lParam;
 	return 0;
 }

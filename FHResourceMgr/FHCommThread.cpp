@@ -68,7 +68,7 @@ BEGIN_INTERFACE_MAP(FHCommThread, CWinThread)
 	INTERFACE_PART(FHCommThread, IID_IFHCommThread, Dispatch)
 END_INTERFACE_MAP()
 
-void FHCommThread::SetIdentityKey(CString key)
+void FHCommThread::SetIdentifyKey(CString key)
 {
 	m_cClientInfo.key = key;
 }
@@ -91,17 +91,22 @@ void FHCommThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 	while (!m_bQuit) {
 		if (NULL != m_pcCommSocket) {
 			if (m_pcCommSocket->RecvMessage()) {
-
 				while (m_pcCommSocket->PopMessage(cMsg)) {
 					if (FH_COMM_MACHINEINFO == cMsg.GetCommandID()) {
 						m_cClientInfo.hostname = cMsg.GetMachineInfo().hostname;
 						m_cClientInfo.address = m_pcCommSocket->GetPeerName();
 						int ret = AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_UPDATECONNECT,0,(LPARAM)&m_cClientInfo);
 					}
+					else if (FH_COMM_FILEINFO == cMsg.GetCommandID()) {
+						FH_MSG_FileInfo cFileInfo = cMsg.GetFileInfo();
+						UINT key = sscanf("%u", m_cClientInfo.key.GetString());
+						AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_UPFILEINFO,(WPARAM)key,(LPARAM)&cMsg);
+					}
 				}
 			}
 			else {
 				if (WSAECONNRESET == m_pcCommSocket->GetErrorCode()) {
+					
 					AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_CLIENTDISCONNECT, 0, (LPARAM)&m_cClientInfo);
 					break;
 				}
