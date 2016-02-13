@@ -55,17 +55,21 @@ void FHConnectThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 		FHMessage cMsg;
 		if (NULL != m_pcConnectSocket) {
 			if (m_pcConnectSocket->RecvMessage()) {
-				
+				while (m_pcConnectSocket->PopMessage(cMsg)) {
+					if (FH_COMM_OPEINFO == cMsg.GetCommandID()) {
+						 AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_REQFILEINFO,0,(LPARAM)&cMsg);
+					}
+				}
 			}
 			else {
 				if (WSAECONNRESET == m_pcConnectSocket->GetErrorCode()) {
 					int ret = AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_SERVERDISCONNECT);
-					return;
+					break;
 				}
 			}
 		}
-	} // while
 
+	} // while
 }
 
 void FHConnectThread::RegisterSocket(const SOCKET& hSocket)

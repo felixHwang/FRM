@@ -58,3 +58,11 @@ BOOL FHServerManager::StopListen()
 	}
 	return TRUE;
 }
+
+FHSocket* FHServerManager::GetChannelSocket(CString key)
+{
+	if (NULL != m_pcAcceptThread) {
+		return m_pcAcceptThread->GetChannelSocket(key);
+	}
+	return NULL;
+}

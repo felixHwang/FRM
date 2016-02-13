@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "FHResourceMgr.h"
 #include "FHFileBrowser.h"
+#include "FHFile.h"
 
 
 // FHFileBrowser ¶Ô»°¿ò
@@ -238,52 +239,28 @@ void FHFileBrowser::EnterDirectory(const CString& strFilename, const bool local)
 		return;
 	}
 
-	CString relPath;
+	CString absPath;
 	if (local) {
-		relPath = m_cCurrFilePath;
+		absPath = m_cCurrFilePath;
 	}
 	else {
-		relPath = m_cRemoteFilePath;
+		absPath = m_cRemoteFilePath;
 	}
 
-	CList<FH_FileInfo> fileList;
-
-	int index = relPath.GetLength();
-	if (0 >= index) {
+	FHFile cFile;
+	if (!cFile.JoinPath(strFilename, absPath)) {
 		return;
 	}
-	// remove last '\' or '/'
-	while ('\\' == relPath[index-1] || '/' == relPath[index-1]) {
-		--index;
-		if (0 == index) {
-			return;		// last '\\\' maybe invalid
-		}
-	}
-	if (0 != index && index != relPath.GetLength()) {
-		relPath.Truncate(index);
-	}
-	
-	if (".." == strFilename) {
-		int index1 = relPath.ReverseFind('\\');
-		int index2 = relPath.ReverseFind('/');
-		int newLen = (index1>index2)?index1:index2;
-		// root dir already or not
-		if (-1 != newLen) {
-			relPath.Truncate(newLen);
-		}
-	}
-	else {
-		relPath += '\\' + strFilename;
-	}
 
 	if (local) {
-		if (GetFileList(relPath, fileList)) {
-			SetEditFilePath(relPath);
+		CList<FH_FileInfo> fileList;
+		if (GetFileList(absPath, fileList)) {
+			SetEditFilePath(absPath);
 			DisplayFileList(fileList);
 		}
 	}
 	else {
-		AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_REQFILEINFO, 0, (LPARAM)&relPath);
+		AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_REQFILEINFO, 0, (LPARAM)&absPath);
 	}
 	
 }

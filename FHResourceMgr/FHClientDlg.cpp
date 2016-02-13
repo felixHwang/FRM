@@ -6,6 +6,7 @@
 #include "FHClientDlg.h"
 #include "FHConnectSocket.h"
 #include "FHMessage.h"
+#include "FHFile.h"
 
 const INT FH_TIMER_CLIENT_CONNECT = 1;
 
@@ -62,6 +63,7 @@ BEGIN_MESSAGE_MAP(FHClientDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON1, &FHClientDlg::OnBnClickedButtonConnServer)
 	ON_BN_CLICKED(IDC_BUTTON2, &FHClientDlg::OnBnClickedButtonDisconnServer)
 	ON_MESSAGE(FH_MSCMD_SERVERDISCONNECT, RecvDisconnect)
+	ON_MESSAGE(FH_MSCMD_REQFILEINFO, RecvRequestFileInfo)
 END_MESSAGE_MAP()
 
 BEGIN_DISPATCH_MAP(FHClientDlg, CDialog)
@@ -163,6 +165,16 @@ LRESULT FHClientDlg::RecvDisconnect(WPARAM wParam,LPARAM lParam)
 	m_cClientMgr.StopConnect();
 	m_cPromptText = _T("服务端关闭，连接断开。");
 	this->SetDlgItemText(IDC_STATIC2, m_cPromptText);
+	return 0;
+}
+
+LRESULT FHClientDlg::RecvRequestFileInfo(WPARAM wParam,LPARAM lParam)
+{
+	FHMessage cMsg =  *((FHMessage*)lParam);
+	FH_MSG_OperatorInfo opeInfo = cMsg.GetOperatorInfo();
+	if (0 < opeInfo.opeItemVec.size()) {
+		m_cClientMgr.SendServerDirInfo(opeInfo.opeItemVec[0].filePath);
+	}
 	return 0;
 }
 

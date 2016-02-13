@@ -17,7 +17,7 @@ public:
 
 	BOOL StopConnect();
 	void InitMachineInfo();
-	bool SendServerDirInfo(CString strFilename);
+	bool SendServerDirInfo(CString strFilePath);
 private:
 	FHConnectThread* m_pcConnectThread;
 	FHConnectSocket* m_pcConnectSocket;

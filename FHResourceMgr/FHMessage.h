@@ -66,7 +66,6 @@ struct FH_MSG_FileInfo {
 		lenFilePath = 0;
 		filePath = "";
 	}
-	/*FH_MSG_FileInfo(const FH_MSG_FileInfo& cInfo) {}*/
 	
 	void Clear()
 	{
@@ -75,6 +74,47 @@ struct FH_MSG_FileInfo {
 		fileItemVec.clear();
 	}
 	
+};
+
+#define FH_MSG_OPECODE_LSDIR	1
+
+struct FH_MSG_OperatorInfo
+{
+	struct FH_MSG_OperatorInfo_Item
+	{
+		INT lenFilePath;
+		CString filePath;
+		FH_MSG_OperatorInfo_Item()
+		{
+			lenFilePath = -1;
+			filePath = "";
+		}
+		FH_MSG_OperatorInfo_Item(const FH_MSG_OperatorInfo_Item& item)
+		{
+			lenFilePath = item.lenFilePath;
+			filePath = item.filePath;
+		}
+		FH_MSG_OperatorInfo_Item& operator=(const FH_MSG_OperatorInfo_Item& item)
+		{
+			lenFilePath = item.lenFilePath;
+			filePath = item.filePath;
+			return *this;
+		}
+	};
+
+	UINT operatorCode;
+	std::vector<FH_MSG_OperatorInfo_Item> opeItemVec;
+
+	FH_MSG_OperatorInfo()
+	{
+		operatorCode = 0;
+	}
+
+	void Clear()
+	{
+		operatorCode = 0;
+		opeItemVec.clear();
+	}
 };
 
 class FHMessage
@@ -98,7 +138,9 @@ public:
 	const FH_MSG_FileInfo GetFileInfo() const;
 	void SetFileInfo(const FH_MSG_FileInfo& fileInfo);
 	void MergeFileInfo(const FHMessage& cMsg);
-	
+
+	const FH_MSG_OperatorInfo GetOperatorInfo() const;
+	void SetOperatorInfo(const FH_MSG_OperatorInfo& opeInfo);
 
 private:
 	void SerializeConfigData(CArchive& ar);
@@ -106,13 +148,12 @@ private:
 	UINT m_szCommandID;
 	
 	FH_MSG_MachineInfo m_cConfigInfo;
-	
 	FH_MSG_FileInfo m_cFileInfo;
+	FH_MSG_OperatorInfo m_cOpeInfo;
 
 	BOOL m_bHasConfigInfo;
-
 	BOOL m_bHasFileInfo;
-	
+	BOOL m_bHasOpeInfo;
 };
 
 

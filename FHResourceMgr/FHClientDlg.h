@@ -49,6 +49,7 @@ private:
 	//CEdit m_cEditCtrl;
 public:
 	afx_msg void OnBnClickedButtonDisconnServer();
+	LRESULT RecvRequestFileInfo(WPARAM wParam,LPARAM lParam);
 private:
 	CString m_cPromptText;
 	UINT m_szConnectTimes;

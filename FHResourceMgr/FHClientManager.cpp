@@ -56,8 +56,7 @@ int FHClientManager::StartConnect(const CString cStrAddr, const unsigned int por
 
 	char currPath[257];
 	GetCurrentDirectory(sizeof(currPath), currPath);
-	m_cCurrWorkingPath = currPath;
-	SendServerDirInfo("");
+	SendServerDirInfo(currPath);
 	return 0;
 }
 
@@ -122,29 +121,14 @@ const CString& FHClientManager::GetHostname()
 	return m_cHostname;
 }
 
-bool FHClientManager::SendServerDirInfo(CString strFilename)
+bool FHClientManager::SendServerDirInfo(CString strFilePath)
 {
 	if (NULL != m_pcConnectSocket) {
-		CString strPath = m_cCurrWorkingPath + "\\" + strFilename;
 		FHFile cfile;
-		CList<FH_FileInfo> fileList;
-		if (cfile.GetFileList(strPath, fileList)) {
-			m_cCurrWorkingPath = strPath;
+		FH_MSG_FileInfo cFileInfo;
+		if (cfile.GetFileList(strFilePath, cFileInfo)) {
+			m_cCurrWorkingPath = strFilePath;
 			FHMessage cMsg;
-			FH_MSG_FileInfo cFileInfo;
-			cFileInfo.lenFilePath = m_cCurrWorkingPath.GetLength();
-			cFileInfo.filePath = m_cCurrWorkingPath;
-			for (int i=0; i<fileList.GetSize(); ++i) {
-				POSITION positon = fileList.FindIndex(i);
-				FH_FileInfo cInfo = fileList.GetAt(positon);
-				FH_MSG_FileInfo::FH_MSG_FileInfo_Item item;
-				item.fileSize = cInfo.fileSize;
-				item.fileType = cInfo.fileType;
-				item.lenFilename = cInfo.filename.GetLength();
-				item.filename = cInfo.filename;
-				item.fileCreateTime = cInfo.fileCreateTime;
-				cFileInfo.fileItemVec.push_back(item);
-			}
 			cMsg.SetCommandID(FH_COMM_FILEINFO);
 			cMsg.SetFileInfo(cFileInfo);
 			m_pcConnectSocket->SendMessage(cMsg);

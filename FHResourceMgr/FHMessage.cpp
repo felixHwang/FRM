@@ -10,6 +10,7 @@
 FHMessage::FHMessage()
 :m_bHasConfigInfo(FALSE)
 ,m_bHasFileInfo(FALSE)
+,m_bHasOpeInfo(FALSE)
 {
 }
 
@@ -63,6 +64,9 @@ FHMessage& FHMessage::operator=(const FHMessage& cMsg)
 	if (cMsg.m_bHasFileInfo) {
 		this->SetFileInfo(cMsg.GetFileInfo());
 	}
+	if (cMsg.m_bHasOpeInfo) {
+		this->SetOperatorInfo(cMsg.GetOperatorInfo());
+	}
 	return *this;
 }
 
@@ -82,10 +86,11 @@ void FHMessage::Clear()
 {
 	m_bHasFileInfo = FALSE;
 	m_bHasConfigInfo = FALSE;
+	m_bHasOpeInfo = FALSE;
 
 	m_cFileInfo.Clear();
 	m_cConfigInfo.Clear();
-
+	m_cOpeInfo.Clear();
 }
 
 void FHMessage::MergeFileInfo(const FHMessage& cMsg)
@@ -97,4 +102,16 @@ void FHMessage::MergeFileInfo(const FHMessage& cMsg)
 		}
 	}
 	
+}
+
+const FH_MSG_OperatorInfo FHMessage::GetOperatorInfo() const
+{
+	return m_cOpeInfo;
+}
+
+void FHMessage::SetOperatorInfo(const FH_MSG_OperatorInfo& opeInfo)
+{
+	m_bHasOpeInfo = TRUE;
+	m_cOpeInfo = opeInfo;
+
 }

@@ -111,4 +111,13 @@ void FHAcceptThread::UnRegisterSocket()
 	m_pcAcceptSocket = NULL;
 }
 
+FHSocket* FHAcceptThread::GetChannelSocket(CString key)
+{
+	std::map<CString,FH_CommChannelDetail>::iterator it = m_cVecConnectDetail.find(key);
+	if (m_cVecConnectDetail.end() != it) {
+		return it->second.pcCommSocket;
+	}
+	return NULL;
+}
+
 // FHAcceptThread 消息处理程序

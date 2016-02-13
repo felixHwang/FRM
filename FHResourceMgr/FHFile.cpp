@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "FHFile.h"
+#include "FHMessage.h"
 
 FHFile::FHFile(void)
 {
@@ -24,7 +25,7 @@ bool FHFile::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileLis
 		dotInfo.filename = "..";
 		fileList.AddTail(dotInfo);*/
 
-		bool bWorking = true;;
+		BOOL bWorking = true;;
 		while (bWorking) {
 			bWorking = searchFile.FindNextFile();
 			if (searchFile.IsDots()) {
@@ -54,3 +55,58 @@ bool FHFile::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileLis
 	}
 	return false;
 }
+
+bool FHFile::GetFileList(const CString& strFilePath, FH_MSG_FileInfo& cFileInfo)
+{
+	CList<FH_FileInfo> fileList;
+	if (GetFileList(strFilePath, fileList)) {
+		cFileInfo.lenFilePath = strFilePath.GetLength();
+		cFileInfo.filePath = strFilePath;
+
+		for (int i=0; i<fileList.GetSize(); ++i) {
+			POSITION positon = fileList.FindIndex(i);
+			FH_FileInfo cInfo = fileList.GetAt(positon);
+			FH_MSG_FileInfo::FH_MSG_FileInfo_Item item;
+			item.fileSize = cInfo.fileSize;
+			item.fileType = cInfo.fileType;
+			item.lenFilename = cInfo.filename.GetLength();
+			item.filename = cInfo.filename;
+			item.fileCreateTime = cInfo.fileCreateTime;
+			cFileInfo.fileItemVec.push_back(item);
+		}
+		return true;
+	}
+	return false;
+}
+
+BOOL FHFile::JoinPath(const CString& strFilename, CString& absolutePath)
+{
+	int index = absolutePath.GetLength();
+	if (0 >= index) {
+		return FALSE;
+	}
+	// remove last '\' or '/'
+	while ('\\' == absolutePath[index-1] || '/' == absolutePath[index-1]) {
+		--index;
+		if (0 == index) {
+			return FALSE;		// last '\\\' maybe invalid
+		}
+	}
+	if (0 != index && index != absolutePath.GetLength()) {
+		absolutePath.Truncate(index);
+	}
+
+	if (".." == strFilename) {
+		int index1 = absolutePath.ReverseFind('\\');
+		int index2 = absolutePath.ReverseFind('/');
+		int newLen = (index1>index2)?index1:index2;
+		// root dir already or not
+		if (-1 != newLen) {
+			absolutePath.Truncate(newLen);
+		}
+	}
+	else {
+		absolutePath += '\\' + strFilename;
+	}
+	return TRUE;
+};

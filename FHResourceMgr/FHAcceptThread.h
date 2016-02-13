@@ -28,9 +28,11 @@ public:
 	void RegisterSocket(FHAcceptSocket* pcSocket);
 	virtual void UnRegisterSocket();
 
+	FHSocket* GetChannelSocket(CString key);
+
 protected:
 	DECLARE_MESSAGE_MAP()
-
+	
 	struct FH_CommChannelDetail {
 		FH_MachineInfo machineInfo;
 		FHCommThread* pcCommThread;

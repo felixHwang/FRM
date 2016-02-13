@@ -165,6 +165,32 @@ BOOL FHSocket::SendMessage(const FHMessage& cMsg)
 			// DisplayErrMessageBox(_T("发送机器信息到服务器成功"), tmp);
 		}
 	}
+	else if (FH_COMM_OPEINFO == tmp) {
+		int totalSize = 12;
+		FH_MSG_OperatorInfo opeInfo = cMsg.GetOperatorInfo();
+		tmp = opeInfo.operatorCode;
+		FH_WRITE4BYTE(pWrite, &tmp)
+		pWrite += 4;
+		for (size_t i=0; i<opeInfo.opeItemVec.size(); ++i) {
+			tmp = opeInfo.opeItemVec[i].lenFilePath;
+			FH_WRITE4BYTE(pWrite, &tmp)
+			pWrite += 4;
+			FH_WRITESTRING(pWrite, opeInfo.opeItemVec[i].filePath.GetString(), tmp)
+			pWrite += tmp;
+
+			totalSize = totalSize + 4 + tmp;
+		}
+
+		FH_WRITE4BYTE(m_pcRecvBuffer, &totalSize)
+		tmp = send(m_hSocket, m_pcRecvBuffer, totalSize, 0);
+		if (SOCKET_ERROR == tmp || tmp != totalSize) {
+			DisplayErrMessageBox(_T("发送命令信息到客户端失败"), GetLastError());
+			return FALSE;
+		}
+		else {
+			// DisplayErrMessageBox(_T("发送命令信息到客户端成功"), tmp);
+		}	
+	}
 	else if (FH_COMM_FILEINFO == tmp) {
 		// calculate msg size
 		const FH_MSG_FileInfo& fileInfo = cMsg.GetFileInfo();
@@ -251,6 +277,26 @@ BOOL FHSocket::ParseRecvMessage(const char* pcData)
 		FHMessage cMsg;
 		cMsg.SetCommandID(commandID);
 		cMsg.SetMachineInfo(FH_MSG_MachineInfo(strName));
+		m_cListMsg.AddTail(cMsg);
+		m_iRemainPos = 0;
+	}
+	else if (FH_COMM_OPEINFO == commandID) {
+		int code = *((int*)pRead);
+		pRead += sizeof(int);
+		int len = *((int*)pRead);
+		pRead += sizeof(int);
+		CString strFilePath(pRead, len);
+
+		FH_MSG_OperatorInfo::FH_MSG_OperatorInfo_Item item;
+		item.lenFilePath = len;;
+		item.filePath = strFilePath;
+		FH_MSG_OperatorInfo opeInfo;
+		opeInfo.opeItemVec.push_back(item);
+		opeInfo.operatorCode = code;
+
+		FHMessage cMsg;
+		cMsg.SetCommandID(commandID);
+		cMsg.SetOperatorInfo(opeInfo);
 		m_cListMsg.AddTail(cMsg);
 		m_iRemainPos = 0;
 	}

@@ -253,6 +253,21 @@ LRESULT FHServerDlg::RefleshFileInfo(WPARAM wParam,LPARAM lParam)
 
 LRESULT FHServerDlg::RequestFileInfo(WPARAM wParam,LPARAM lParam)
 {
-	CString filePath = *(CString*)lParam;
+	UINT keyValue = wParam;
+	CString key;
+	key.Format("%u", keyValue);
+	FHSocket* pcSocket = m_cServerManager.GetChannelSocket(key);
+	if (NULL != pcSocket) {
+		FHMessage cMsg;
+		cMsg.SetCommandID(FH_COMM_OPEINFO);
+		FH_MSG_OperatorInfo opeInfo;
+		opeInfo.operatorCode = FH_MSG_OPECODE_LSDIR;
+		FH_MSG_OperatorInfo::FH_MSG_OperatorInfo_Item item;
+		item.filePath = *(CString*)lParam;
+		item.lenFilePath = item.filePath.GetLength();
+		opeInfo.opeItemVec.push_back(item);
+		cMsg.SetOperatorInfo(opeInfo);
+		pcSocket->SendMessage(cMsg);
+	}
 	return 0;
 }
