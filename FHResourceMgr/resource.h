@@ -5,7 +5,6 @@
 #define IDM_ABOUTBOX                    0x0010
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
-#define IDD_FHRESOURCEMGR_DIALOG        102
 #define IDP_SOCKETS_INIT_FAILED         103
 #define IDR_HTML_ONTEST                 104
 #define IDR_HTML_FHDIAGLOGIN            105
@@ -17,11 +16,8 @@
 #define IDR_MENU1                       138
 #define IDR_MENU_CLIENTOPE              138
 #define IDR_MENU2                       139
-#define IDD_DIALOG4                     141
 #define IDD_DIALOG5                     144
 #define IDD_DIALOG_LOGIN                145
-#define IDD_DIALOG6                     146
-#define IDD_DIALOG7                     147
 #define IDI_ICON_FILEDEFAULT            150
 #define IDI_ICON_FILENETWORK            152
 #define IDI_ICON_FOLDERDEFAULT          153

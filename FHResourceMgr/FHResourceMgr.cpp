@@ -3,7 +3,6 @@
 
 #include "stdafx.h"
 #include "FHResourceMgr.h"
-#include "FHResourceMgrDlg.h"
 #include "FHDiagLogin.h"
 #include "FHClientDlg.h"
 #include "FHServerDlg.h"

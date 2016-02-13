@@ -270,10 +270,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FHResourceMgrDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\FHServerDlg.cpp"
 				>
 			</File>
@@ -337,10 +333,6 @@
 			</File>
 			<File
 				RelativePath=".\FHResourceMgr.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FHResourceMgrDlg.h"
 				>
 			</File>
 			<File
