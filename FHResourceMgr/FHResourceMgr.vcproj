@@ -190,11 +190,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FHAcceptSocket.h"
+				>
+			</File>
+			<File
 				RelativePath=".\FHAcceptThread.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FHBaseThread.cpp"
+				RelativePath=".\FHAcceptThread.h"
 				>
 			</File>
 			<File
@@ -206,11 +210,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FHCommandSocket.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\FHCommandSocket.h"
+				RelativePath=".\FHClientManager.h"
 				>
 			</File>
 			<File
@@ -218,7 +218,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FHCommSocket.h"
+				>
+			</File>
+			<File
 				RelativePath=".\FHCommThread.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FHCommThread.h"
 				>
 			</File>
 			<File
@@ -234,7 +242,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\fhdiag.cpp"
+				RelativePath=".\FHConnectThread.h"
 				>
 			</File>
 			<File
@@ -247,6 +255,10 @@
 			</File>
 			<File
 				RelativePath=".\FHFileBrowser.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FHFileBrowser.h"
 				>
 			</File>
 			<File
@@ -270,19 +282,11 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FHServerManager.h"
+				>
+			</File>
+			<File
 				RelativePath=".\FHSocket.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\FHSocketThread.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\fhtestthread.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\FHWinThread.cpp"
 				>
 			</File>
 			<File
@@ -305,10 +309,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath=".\Test.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
@@ -316,39 +316,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\FHAcceptSocket.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FHAcceptThread.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FHBaseThread.h"
-				>
-			</File>
-			<File
 				RelativePath=".\FHClientDlg.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FHClientManager.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FHCommSocket.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FHCommThread.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FHConnectThread.h"
-				>
-			</File>
-			<File
-				RelativePath=".\fhdiag.h"
 				>
 			</File>
 			<File
@@ -357,10 +325,6 @@
 			</File>
 			<File
 				RelativePath=".\FHFile.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FHFileBrowser.h"
 				>
 			</File>
 			<File
@@ -384,23 +348,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FHServerManager.h"
-				>
-			</File>
-			<File
 				RelativePath=".\FHSocket.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FHSocketThread.h"
-				>
-			</File>
-			<File
-				RelativePath=".\fhtestthread.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FHWinThread.h"
 				>
 			</File>
 			<File
@@ -413,10 +361,6 @@
 			</File>
 			<File
 				RelativePath=".\targetver.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Test.h"
 				>
 			</File>
 		</Filter>

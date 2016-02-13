@@ -6,7 +6,6 @@
 #include "FHConnectThread.h"
 #include "FHConnectSocket.h"
 #include "FHMessage.h"
-#include "FHSocket.h"
 
 
 // FHConnectThread
@@ -42,14 +41,6 @@ END_MESSAGE_MAP()
 
 void FHConnectThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 {
-	SOCKADDR_IN		sAddr;
-	int				nAddrLen;
-	SOCKET			hSocket;
-	int bufferLen = 1024*1024;
-	//char* pBuffer = new char[bufferLen];
-
-
-
 	while (!m_bQuit)
 	{
 		FHMessage cMsg;
@@ -72,12 +63,6 @@ void FHConnectThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 	} // while
 }
 
-void FHConnectThread::RegisterSocket(const SOCKET& hSocket)
-{
-	//m_hSocket = hSocket;
-	m_pcSocket = new FHConnectSocket(hSocket);
-}
-
 void FHConnectThread::RegisterSocket(FHConnectSocket* pcSocket)
 {
 	if (NULL != pcSocket) {
@@ -98,4 +83,4 @@ void FHConnectThread::StopThread()
 	CloseHandle(this->m_hThread);
 }
 
-// FHConnectThread 消息处理程序
+

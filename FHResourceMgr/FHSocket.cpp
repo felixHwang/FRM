@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "FHSocket.h"
-#include "FHWinThread.h"
 #include "FHPublicDefine.h"
 #include "stdafx.h"
 #include "FHResourceMgr.h"
@@ -34,9 +33,6 @@ FHSocket::FHSocket(const FH_SOCKET_TYPE type, const SOCKET socket)
 	// SO_RCVBUF > SO_SNDBUF
 	m_pcRecvBuffer = new char[FH_MSG_BUFFER_SIZE];
 	m_pcRemainBuffer = new char[FH_MSG_BUFFER_SIZE];
-	//WSADATA sWSAData;
-	//memset(&sWSAData, 0, sizeof(WSADATA));
-	//int nErrCode = WSAStartup(0x0101, &sWSAData);
 }
 
 FHSocket::~FHSocket(void)
@@ -55,7 +51,6 @@ FHSocket::~FHSocket(void)
 
 BOOL FHSocket::CreateSocket(UINT uiPort /*= FH_DEFAULT_CONNECT_PORT*/)
 {
-	//AfxSocketInit();
 	m_szPort = uiPort;
 	m_hSocket = socket(AF_INET, SOCK_STREAM, 0);
 	BOOL bNodelay=TRUE;
@@ -71,10 +66,6 @@ BOOL FHSocket::StartConnect(CString cStrAddr /*= _T("127.0.0.1")*/)
 	m_cAddr = cStrAddr;
 	m_cAddr = "127.0.0.1";
 
-	//int lenAddr= WideCharToMultiByte(CP_ACP,0,cStrAddr.GetString(),-1,NULL,0,NULL,NULL);  
-	//char* pAddr=new char[lenAddr];  
-	//WideCharToMultiByte(CP_ACP,0,cStrAddr.GetString(),-1,pAddr,lenAddr,NULL,NULL);  
-
 	unsigned long aip = inet_addr(m_cAddr.GetString());
 	SOCKADDR_IN socketAddr ;
 	memset(&socketAddr, 0, sizeof(socketAddr));
@@ -85,11 +76,6 @@ BOOL FHSocket::StartConnect(CString cStrAddr /*= _T("127.0.0.1")*/)
 	else if (FH_SOCKET_TYPE_CLIENT == m_eSocketType)
 		socketAddr.sin_addr.S_un.S_addr = aip;
 
-
-
-	//delete[] pAddr;
-
-
 	if (FH_SOCKET_TYPE_SERVER == m_eSocketType) {
 		ClearError();
 		int retCode = bind(m_hSocket, (SOCKADDR*)&socketAddr, sizeof(SOCKADDR));
@@ -99,36 +85,17 @@ BOOL FHSocket::StartConnect(CString cStrAddr /*= _T("127.0.0.1")*/)
 			SetErrorCode(GetLastError());
 			return FALSE;
 		}
-
-		/*FHAcceptThread* pcThread = (FHAcceptThread*)AfxBeginThread(RUNTIME_CLASS(FHAcceptThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
-
-		pcThread->RegisterSocket(m_hSocket);
-
-		pcThread->ResumeThread();
-
-		pcThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTACCEPT, 0);*/
 	}
 	else if (FH_SOCKET_TYPE_CLIENT == m_eSocketType) {
 		ClearError();
 		int retCode =  connect(m_hSocket, (sockaddr*)&socketAddr, sizeof(SOCKADDR));
-		if (0 == retCode) {
-
-			/*FHConnectThread* pcThread = (FHConnectThread*)AfxBeginThread(RUNTIME_CLASS(FHConnectThread), THREAD_PRIORITY_NORMAL, 0, CREATE_SUSPENDED);
-
-			pcThread->RegisterSocket(m_hSocket);
-
-			pcThread->ResumeThread();
-
-			pcThread->PostThreadMessage(FH_WM_THREAD, FH_MSCMD_STARTCONNECT, 0);*/
-		}
-		else {
+		if (0 != retCode) {
 			SetErrorCode(retCode);
 			return FALSE;
 		}
 	}
 
 	return TRUE;
-
 }
 
 BOOL FHSocket::CloseSocket()

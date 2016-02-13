@@ -3,11 +3,12 @@
 
 #include "stdafx.h"
 #include "FHResourceMgr.h"
-#include "FHAcceptThread.h"
-#include "FHCommThread.h"
 #include "FHSocket.h"
-#include "FHAcceptSocket.h"
+#include "FHAcceptThread.h"
 #include "FHCommSocket.h"
+#include "FHCommThread.h"
+#include "FHAcceptSocket.h"
+
 
 // FHAcceptThread
 
@@ -65,7 +66,7 @@ void FHAcceptThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 						strKey.Format("%u", m_szKeyIndex);
 						while (m_cVecConnectDetail.end() != m_cVecConnectDetail.find(strKey)) {
 							++m_szKeyIndex;
-							strKey.Format("%u", m_szKeyIndex);	// format twice ?
+							strKey.Format("%u", m_szKeyIndex);
 						}
 						
 						cChannelDetail.machineInfo.key = strKey;
@@ -82,21 +83,13 @@ void FHAcceptThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 						cChannelDetail.pcCommSocket->CloseSocket();
 						delete cChannelDetail.pcCommSocket;
 					}
-				}
-
-					
-				}
-			}
-			else {
-				m_pcAcceptSocket->DisplayErrMessageBox("接收客户端连接失败", m_pcAcceptSocket->GetErrorCode());
+				}	
 			}
 		}
-}
-
-void FHAcceptThread::RegisterSocket(const SOCKET& hSocket)
-{
-	m_hSocket = hSocket;
-	m_pcSocket = new FHAcceptSocket(hSocket);
+		else {
+			m_pcAcceptSocket->DisplayErrMessageBox("接收客户端连接失败", m_pcAcceptSocket->GetErrorCode());
+		}
+	}
 }
 
 void FHAcceptThread::RegisterSocket(FHAcceptSocket* pcSocket)

@@ -1,17 +1,16 @@
 #pragma once
 
 #include<map>
-#include <winsock2.h>
-#include "FHBaseThread.h"
 #include "FHPublicDefine.h"
 
 // FHAcceptThread
 
-class FHCommThread;
+class FHSocket;
 class FHAcceptSocket;
 class FHCommSocket;
+class FHCommThread;
 
-class FHAcceptThread :/* public FHBaseThread,*/public CWinThread
+class FHAcceptThread :public CWinThread
 {
 	DECLARE_DYNCREATE(FHAcceptThread)
 
@@ -24,7 +23,6 @@ public:
 
 	void OnCallBack(WPARAM wParam,LPARAM lParam);
 
-	virtual void RegisterSocket(const SOCKET& hSocket);
 	void RegisterSocket(FHAcceptSocket* pcSocket);
 	virtual void UnRegisterSocket();
 
@@ -41,8 +39,6 @@ protected:
 
 
 	BOOL m_bQuit;
-	SOCKET m_hSocket;
-	FHSocket* m_pcSocket;
 	FHAcceptSocket* m_pcAcceptSocket;
 
 	UINT m_szKeyIndex;

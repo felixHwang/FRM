@@ -5,7 +5,6 @@
 #include "FHResourceMgr.h"
 #include "FHServerDlg.h"
 #include "FHAcceptSocket.h"
-#include "FHSocketThread.h"
 #include <vector>
 #include <string>
 #include "FHFileBrowser.h"
@@ -95,23 +94,6 @@ BOOL FHServerDlg::OnInitDialog()
 
 
 	m_cServerManager.StartListen("127.0.0.1");
-	/*if (NULL == m_pcServerSocket)
-	{
-		m_pcServerSocket = new FHAcceptSocket();
-		if (NULL != m_pcServerSocket) {
-			m_pcServerSocket->CreateSocket();
-			m_pcServerSocket->StartConnect();
-		}
-	}*/
-
-	
-	
-	//this->SendMessage(FH_MSCMD_UPDATECONNECT);
-
-	//FHFileBrowser* fileBR = new FHFileBrowser();
-	//fileBR->Create(IDD_DIALOGFILEBR, this);
-	//fileBR->ShowWindow(SW_SHOW);
-
 
 	return TRUE;
 }
@@ -142,7 +124,6 @@ END_INTERFACE_MAP()
 
 
 // FHServerDlg 消息处理程序
-
 void FHServerDlg::OnNMRClickListOfClient(NMHDR *pNMHDR, LRESULT *pResult)
 {
 

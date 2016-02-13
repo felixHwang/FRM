@@ -114,6 +114,3 @@ void FHCommThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 		}
 	}
 }
-
-
-// FHCommThread 消息处理程序

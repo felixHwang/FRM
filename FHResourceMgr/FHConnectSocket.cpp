@@ -2,9 +2,8 @@
 //
 
 #include "stdafx.h"
-#include "FHResourceMgr.h"
 #include "FHConnectSocket.h"
-#include "FHSocketThread.h"
+#include "FHPublicDefine.h"
 
 
 // FHConnectSocket
@@ -22,16 +21,4 @@ FHConnectSocket::FHConnectSocket(const SOCKET socket)
 
 FHConnectSocket::~FHConnectSocket()
 {
-}
-
-
-// FHConnectSocket ³ÉÔ±º¯Êý
-BOOL FHConnectSocket::CreateSocket(UINT uiPort)
-{
-	return FHSocket::CreateSocket(uiPort);
-}
-
-BOOL FHConnectSocket::StartConnect(CString cStrAddr)
-{
-	return FHSocket::StartConnect(cStrAddr);
 }
