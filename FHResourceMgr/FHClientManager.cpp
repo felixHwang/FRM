@@ -64,23 +64,22 @@ int FHClientManager::StartConnect(const CString cStrAddr, const unsigned int por
 
 BOOL FHClientManager::StopConnect()
 {
-	if (NULL != m_pcConnectThread) {
-		// m_pcConnectThread->SuspendThread();
-		m_pcConnectThread->StopThread();
-	}
-
 	if (NULL != m_pcConnectSocket) {
 		m_pcConnectSocket->CloseSocket();
 	}
 
 	if (NULL != m_pcConnectThread) {
+		// m_pcConnectThread->SuspendThread();
+		m_pcConnectThread->StopThread();
 		m_pcConnectThread->UnRegisterSocket();
+		m_pcConnectThread = NULL;
 	}
 
 	if (NULL != m_pcConnectSocket) {
 		delete m_pcConnectSocket;
 		m_pcConnectSocket = NULL;
 	}
+	
 	return TRUE;
 }
 
