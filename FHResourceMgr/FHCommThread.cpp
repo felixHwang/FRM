@@ -8,7 +8,7 @@
 #include "FHMessage.h"
 #include "FHCommSocket.h"
 #include "FHServerDlg.h"
-#include "FHFileBrowser.h"
+#include "FHFileBrowserDlg.h"
 #include <vector>
 #include <string>
 

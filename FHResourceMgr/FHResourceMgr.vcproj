@@ -254,11 +254,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FHFileBrowser.cpp"
+				RelativePath=".\FHFileBrowserDlg.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FHFileBrowser.h"
+				RelativePath=".\FHFileBrowserDlg.h"
 				>
 			</File>
 			<File

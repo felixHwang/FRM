@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "FHResourceMgr.h"
 #include "FHServerDlg.h"
-#include "FHFileBrowser.h"
+#include "FHFileBrowserDlg.h"
 #include "FHSocket.h"
 
 // FHServerDlg ¶Ô»°¿ò
@@ -173,7 +173,7 @@ void FHServerDlg::OnSelectOpen()
 				RequestFileInfo(keyNum, (LPARAM)&strFilePath);
 			}
 			else {
-				FHFileBrowser* fileBR = new FHFileBrowser();
+				FHFileBrowserDlg* fileBR = new FHFileBrowserDlg();
 				if (NULL != fileBR) {
 					m_cFileBrList[key] = fileBR;
 					fileBR->Create(IDD_DIALOGFILEBR, this);
@@ -210,9 +210,9 @@ LRESULT FHServerDlg::RecvClientDisconnect(WPARAM wParam,LPARAM lParam)
 		if(cInfo.key == m_cClientCtrlList.GetItemText(i,2))  
 		{  
 			m_cClientCtrlList.DeleteItem(i);
-			const std::map<CString, FHFileBrowser*>::iterator it = m_cFileBrList.find(cInfo.key);
+			const std::map<CString, FHFileBrowserDlg*>::iterator it = m_cFileBrList.find(cInfo.key);
 			if (m_cFileBrList.end() != it) {
-				FHFileBrowser* fileBR = it->second;
+				FHFileBrowserDlg* fileBR = it->second;
 				m_cFileBrList.erase(it);
 				fileBR->DestroyWindow();
 				delete fileBR;
@@ -229,12 +229,12 @@ LRESULT FHServerDlg::RefleshFileInfo(WPARAM wParam,LPARAM lParam)
 	UINT keyValue = wParam;
 	CString key;
 	key.Format("%u", keyValue);
-	std::map<CString, FHFileBrowser*>::iterator it = m_cFileBrList.find(key);
+	std::map<CString, FHFileBrowserDlg*>::iterator it = m_cFileBrList.find(key);
 	if (it == m_cFileBrList.end()) {
 		return -1;
 	}
 
-	FHFileBrowser* pcFileBrowser = it->second;
+	FHFileBrowserDlg* pcFileBrowser = it->second;
 	if (NULL == pcFileBrowser) {
 		return -1;
 	}

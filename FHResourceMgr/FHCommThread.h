@@ -5,7 +5,7 @@
 
 class FHAcceptThread;
 class FHCommSocket;
-class FHFileBrowser;
+class FHFileBrowserDlg;
 // FHCommThread
 
 class FHCommThread : public CWinThread

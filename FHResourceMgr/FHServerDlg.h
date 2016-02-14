@@ -7,7 +7,7 @@
 // FHServerDlg ¶Ô»°¿ò
 
 
-class FHFileBrowser;
+class FHFileBrowserDlg;
 
 class FHServerDlg : public CDialog
 {
@@ -42,6 +42,6 @@ public:
 
 private:
 	CListCtrl m_cClientCtrlList;
-	std::map<CString, FHFileBrowser*> m_cFileBrList;
+	std::map<CString, FHFileBrowserDlg*> m_cFileBrList;
 	FHServerManager m_cServerManager;
 };
