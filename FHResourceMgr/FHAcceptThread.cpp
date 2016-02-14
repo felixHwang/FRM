@@ -5,17 +5,18 @@
 #include "FHResourceMgr.h"
 #include "FHSocket.h"
 #include "FHAcceptThread.h"
+#include "FHAcceptSocket.h"
 #include "FHCommSocket.h"
 #include "FHCommThread.h"
-#include "FHAcceptSocket.h"
-
 
 // FHAcceptThread
 
 IMPLEMENT_DYNCREATE(FHAcceptThread, CWinThread)
 
 FHAcceptThread::FHAcceptThread()
-:m_szKeyIndex(0)
+:m_pcAcceptSocket(NULL)
+,m_bQuit(FALSE)
+,m_szKeyIndex(0)
 {
 	EnableAutomation();
 }
@@ -27,21 +28,18 @@ FHAcceptThread::~FHAcceptThread()
 BOOL FHAcceptThread::InitInstance()
 {
 	// TODO: 在此执行任意逐线程初始化
-	m_bQuit = FALSE;
 	return TRUE;
 }
 
 int FHAcceptThread::ExitInstance()
 {
 	// TODO: 在此执行任意逐线程清理
-	//m_bQuit = TRUE;
 	return CWinThread::ExitInstance();
 }
 
 BEGIN_MESSAGE_MAP(FHAcceptThread, CWinThread)
 	ON_THREAD_MESSAGE(FH_WM_THREAD, OnCallBack)
 END_MESSAGE_MAP()
-
 
 void FHAcceptThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 {
@@ -64,13 +62,13 @@ void FHAcceptThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 					if (NULL != cChannelDetail.pcCommThread) {
 						CString strKey;
 						strKey.Format("%u", m_szKeyIndex);
-						while (m_cVecConnectDetail.end() != m_cVecConnectDetail.find(strKey)) {
+						while (m_cMapConnectDetail.end() != m_cMapConnectDetail.find(strKey)) {
 							++m_szKeyIndex;
 							strKey.Format("%u", m_szKeyIndex);
 						}
 						
 						cChannelDetail.machineInfo.key = strKey;
-						m_cVecConnectDetail[strKey] = cChannelDetail;
+						m_cMapConnectDetail[strKey] = cChannelDetail;
 						cChannelDetail.pcCommThread->RegisterSocket(cChannelDetail.pcCommSocket);
 						cChannelDetail.pcCommThread->SetIdentifyKey(strKey);
 						++m_szKeyIndex;
@@ -106,11 +104,43 @@ void FHAcceptThread::UnRegisterSocket()
 
 FHSocket* FHAcceptThread::GetChannelSocket(CString key)
 {
-	std::map<CString,FH_CommChannelDetail>::iterator it = m_cVecConnectDetail.find(key);
-	if (m_cVecConnectDetail.end() != it) {
+	std::map<CString,FH_CommChannelDetail>::iterator it = m_cMapConnectDetail.find(key);
+	if (m_cMapConnectDetail.end() != it) {
 		return it->second.pcCommSocket;
 	}
 	return NULL;
 }
 
-// FHAcceptThread 消息处理程序
+void FHAcceptThread::RemoveCommChannel(CString key)
+{
+	std::map<CString,FH_CommChannelDetail>::iterator it = m_cMapConnectDetail.find(key);
+	if (m_cMapConnectDetail.end() != it) {
+		FH_CommChannelDetail item = it->second;
+		m_cMapConnectDetail.erase(it);
+		if (NULL != item.pcCommSocket) {
+			item.pcCommSocket->CloseSocket();
+		}
+
+		if (NULL != item.pcCommThread) {
+			item.pcCommThread->StopThread();
+			item.pcCommThread->UnRegisterSocket();
+		}
+
+		if (NULL != item.pcCommSocket) {
+			delete item.pcCommSocket;
+		}
+		
+	}
+}
+
+void FHAcceptThread::StopThread()
+{
+	while (0 < m_cMapConnectDetail.size()) {
+		CString key = m_cMapConnectDetail.begin()->first;
+		RemoveCommChannel(key);
+	}
+	m_bQuit = TRUE;
+	DWORD dwCode = 0;
+	TerminateThread(this->m_hThread, dwCode);
+	CloseHandle(this->m_hThread);
+}

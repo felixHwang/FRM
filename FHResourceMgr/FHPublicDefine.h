@@ -22,12 +22,27 @@
 #define FH_FILETYPE_NORMAL (FILE_ATTRIBUTE_NORMAL)
 
 struct FH_MachineInfo {
+	FH_MachineInfo()
+	{
+		key = "";
+		hostname = "";
+		address = "";
+	}
+
 	CString key;
 	CString hostname;
 	CString address;
 };
 
 struct FH_FileInfo {
+	FH_FileInfo()
+	{
+		fileType = -1;
+		fileSize = -1;
+		filename = "";
+		fileCreateTime = "";
+	}
+
 	int fileType;
 	int fileSize;
 	CString filename;

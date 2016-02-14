@@ -28,7 +28,6 @@ public:
 
 	void SetIdentifyKey(const CString key);
 	BOOL PreTranslateMessage(MSG* pMsg);
-	BOOL GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileList);
 	void OnSize(UINT nType, int cx, int cy);
 
 	void DisplayFileList(const CList<FH_FileInfo>& fileList, const BOOL local = TRUE);

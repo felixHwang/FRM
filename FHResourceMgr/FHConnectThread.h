@@ -19,7 +19,7 @@ public:
 
 	void RegisterSocket(FHConnectSocket* pcSocket);
 
-	virtual void UnRegisterSocket();
+	void UnRegisterSocket();
 
 	void StopThread();
 

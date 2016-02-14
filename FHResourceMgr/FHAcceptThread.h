@@ -27,23 +27,29 @@ public:
 	virtual void UnRegisterSocket();
 
 	FHSocket* GetChannelSocket(CString key);
+	void RemoveCommChannel(CString key);
+	void StopThread();
 
 protected:
 	DECLARE_MESSAGE_MAP()
-	
+
+private:
 	struct FH_CommChannelDetail {
+		FH_CommChannelDetail()
+		{
+			pcCommThread = NULL;
+			pcCommSocket = NULL;
+		}
+
 		FH_MachineInfo machineInfo;
 		FHCommThread* pcCommThread;
 		FHCommSocket* pcCommSocket;
 	};
 
-
-	BOOL m_bQuit;
+	std::map<CString,FH_CommChannelDetail> m_cMapConnectDetail;
 	FHAcceptSocket* m_pcAcceptSocket;
-
+	BOOL m_bQuit;
 	UINT m_szKeyIndex;
-
-	std::map<CString,FH_CommChannelDetail> m_cVecConnectDetail;
 };
 
 

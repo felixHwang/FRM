@@ -14,6 +14,7 @@ public:
 	int StartListen(const CString cStrAddr, const unsigned int port = FH_DEFAULT_CONNECT_PORT);
 	BOOL StopListen();
 	FHSocket* GetChannelSocket(CString key);
+	void RemoveCommChannel(CString key);
 private:
 	FHAcceptThread* m_pcAcceptThread;
 	FHAcceptSocket* m_pcAcceptSocket;

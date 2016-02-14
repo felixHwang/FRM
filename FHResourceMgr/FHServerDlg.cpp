@@ -92,6 +92,7 @@ BOOL FHServerDlg::OnInitDialog()
 }
 
 BEGIN_MESSAGE_MAP(FHServerDlg, CDialog)
+	ON_WM_CLOSE()
 	ON_NOTIFY(NM_RCLICK, IDC_LIST2, &FHServerDlg::OnNMRClickListOfClient)
 	ON_COMMAND(ID_1_32774, &FHServerDlg::OnSelectOpen)
 	ON_MESSAGE(FH_MSCMD_UPDATECONNECT, RefleshConnectList)
@@ -116,6 +117,12 @@ BEGIN_INTERFACE_MAP(FHServerDlg, CDialog)
 END_INTERFACE_MAP()
 
 // FHServerDlg 消息处理程序
+
+void FHServerDlg::OnClose()
+{
+	m_cServerManager.StopListen();
+	CDialog::OnClose();
+}
 
 BOOL FHServerDlg::PreTranslateMessage(MSG* pMsg)
 {
@@ -158,7 +165,6 @@ void FHServerDlg::OnSelectOpen()
 {
 	// TODO: 在此添加命令处理程序代码
 
-	//m_cClientCtrlList.GetFirstSelectedItemPosition();
 	POSITION pos = m_cClientCtrlList.GetFirstSelectedItemPosition();  
 	if (NULL != pos) {  
 		while (pos) {  
@@ -216,6 +222,8 @@ LRESULT FHServerDlg::RecvClientDisconnect(WPARAM wParam,LPARAM lParam)
 				m_cFileBrList.erase(it);
 				fileBR->DestroyWindow();
 				delete fileBR;
+
+				m_cServerManager.RemoveCommChannel(cInfo.key);
 			}
 			break;
 		}  
@@ -241,10 +249,10 @@ LRESULT FHServerDlg::RefleshFileInfo(WPARAM wParam,LPARAM lParam)
 
 	FHMessage cMsg =  *((FHMessage*)lParam);
 	CList<FH_FileInfo> infoList;
-	FH_FileInfo dots;
+	/*FH_FileInfo dots;
 	dots.filename = "..";
 	dots.fileType = FH_FILETYPE_DIR;
-	infoList.AddTail(dots);
+	infoList.AddTail(dots);*/
 	FH_MSG_FileInfo fileInfo = cMsg.GetFileInfo();
 	for (size_t i=0; i<fileInfo.fileItemVec.size(); ++i) {
 		FH_FileInfo item;

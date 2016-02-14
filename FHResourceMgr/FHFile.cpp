@@ -51,6 +51,12 @@ BOOL FHFile::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileLis
 			}
 		}
 		searchFile.Close();
+
+		FH_FileInfo dots;
+		dots.filename = "..";
+		dots.fileType = FH_FILETYPE_DIR;
+		fileList.AddHead(dots);
+
 		return TRUE;
 	}
 	return FALSE;

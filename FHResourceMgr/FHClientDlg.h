@@ -46,7 +46,6 @@ private:
 	void AbleConnectFunction(BOOL flag = FALSE);
 
 	FHClientManager m_cClientMgr;
-	FHMessage m_cMessage;
 	CString m_cEditAddr;
 	CString m_cPromptText;
 	BOOL m_bConnecting;

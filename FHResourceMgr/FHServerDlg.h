@@ -39,7 +39,7 @@ public:
 	afx_msg LRESULT RequestFileInfo(WPARAM wParam,LPARAM lParam);
 	afx_msg void OnSelectOpen();
 	BOOL PreTranslateMessage(MSG* pMsg);
-
+	void OnClose();
 private:
 	CListCtrl m_cClientCtrlList;
 	std::map<CString, FHFileBrowserDlg*> m_cFileBrList;

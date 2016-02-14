@@ -27,19 +27,19 @@ public:
 
 	virtual BOOL Accept(SOCKET& socket, sockaddr* addr, int* addrlen);
 
-	BOOL SendMessage(const FHMessage& msg);
+	virtual BOOL SendMessage(const FHMessage& msg);
 
-	BOOL RecvMessage();
+	virtual BOOL RecvMessage();
 
-	BOOL PopMessage(FHMessage& cMsg);
+	virtual BOOL PopMessage(FHMessage& cMsg);
 
 	virtual CString GetPeerName();
 
 	void DisplayErrMessageBox(CString str, int err);
 
-	int GetErrorCode();
+	virtual int GetErrorCode();
 
-	void ClearError();
+	virtual void ClearError();
 
 protected:
 	void SetErrorCode(int errorCode);

@@ -80,7 +80,8 @@ BOOL FHFileBrowserDlg::OnInitDialog()
 	GetCurrentDirectory(sizeof(currPath), currPath);
 	SetEditFilePath(currPath);
 	CList<FH_FileInfo> fileList;
-	GetFileList(m_cCurrFilePath, fileList);
+	FHFile cFile;
+	cFile.GetFileList(m_cCurrFilePath, fileList);
 	DisplayFileList(fileList);
 
 	return TRUE;
@@ -114,50 +115,6 @@ void FHFileBrowserDlg::OnSize(UINT nType, int cx, int cy)
 		ResizeControl(IDC_LIST5,cx,cy);
 		GetClientRect(&m_cLastDlgRect);		//最后要更新对话框的大小，当做下一次变化的旧坐标
 	}
-}
-
-BOOL FHFileBrowserDlg::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileList)
-{
-	CFileFind searchFile;
-	CString strWildpath = strFilePath + "\\*.*";
-	fileList.RemoveAll();
-
-	if (0 != searchFile.FindFile(strWildpath, 0)) {
-
-		int dirPos = 0;
-		FH_FileInfo dotInfo;
-		dotInfo.fileType = FH_FILETYPE_DIR;
-		dotInfo.filename = "..";
-		fileList.AddTail(dotInfo);
-
-		BOOL bWorking = TRUE;;
-		while (bWorking) {
-			bWorking = searchFile.FindNextFile();
-			if (searchFile.IsDots()) {
-				continue;
-			}
-
-			FH_FileInfo cInfo;
-			CTime cTime;
-			if (searchFile.GetCreationTime(cTime)) {
-				cInfo.fileCreateTime = cTime.Format("%Y-%m-%d %H:%M:%S");;
-			}
-			cInfo.filename = searchFile.GetFileName();
-			if (searchFile.IsDirectory()) {
-				
-				cInfo.fileType = FH_FILETYPE_DIR;
-				POSITION position = fileList.FindIndex(dirPos++);
-				fileList.InsertAfter(position, cInfo);
-			}
-			else {
-				cInfo.fileType = FH_FILETYPE_NORMAL;
-				fileList.AddTail(cInfo);
-			}
-		}
-		searchFile.Close();
-		return TRUE;
-	}
-	return FALSE;
 }
 
 void FHFileBrowserDlg::DisplayFileList(const CList<FH_FileInfo>& fileList, const BOOL local)
@@ -275,7 +232,8 @@ void FHFileBrowserDlg::EnterDirectory(const CString& strFilename, const BOOL loc
 
 	if (local) {
 		CList<FH_FileInfo> fileList;
-		if (GetFileList(absPath, fileList)) {
+		FHFile cFile;
+		if (cFile.GetFileList(absPath, fileList)) {
 			SetEditFilePath(absPath);
 			DisplayFileList(fileList);
 		}

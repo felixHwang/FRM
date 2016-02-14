@@ -41,7 +41,7 @@ int FHServerManager::StartListen(const CString cStrAddr, const unsigned int port
 BOOL FHServerManager::StopListen()
 {
 	if (NULL != m_pcAcceptThread) {
-		m_pcAcceptThread->SuspendThread();
+		m_pcAcceptThread->StopThread();
 	}
 
 	if (NULL != m_pcAcceptSocket) {
@@ -50,6 +50,7 @@ BOOL FHServerManager::StopListen()
 
 	if (NULL != m_pcAcceptThread) {
 		m_pcAcceptThread->UnRegisterSocket();
+		m_pcAcceptThread = NULL;
 	}
 
 	if (NULL != m_pcAcceptSocket) {
@@ -65,4 +66,11 @@ FHSocket* FHServerManager::GetChannelSocket(CString key)
 		return m_pcAcceptThread->GetChannelSocket(key);
 	}
 	return NULL;
+}
+
+void FHServerManager::RemoveCommChannel(CString key)
+{
+	if (NULL != m_pcAcceptThread) {
+		m_pcAcceptThread->RemoveCommChannel(key);
+	}
 }

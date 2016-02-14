@@ -6,17 +6,14 @@
 #include "FHCommThread.h"
 #include "FHCommSocket.h"
 #include "FHMessage.h"
-#include "FHCommSocket.h"
-#include "FHServerDlg.h"
-#include "FHFileBrowserDlg.h"
-#include <vector>
-#include <string>
 
 // FHCommThread
 
 IMPLEMENT_DYNCREATE(FHCommThread, CWinThread)
 
 FHCommThread::FHCommThread()
+:m_pcCommSocket(NULL)
+,m_bQuit(FALSE)
 {
 	EnableAutomation();
 }
@@ -114,4 +111,12 @@ void FHCommThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 			}
 		}
 	}
+}
+
+void FHCommThread::StopThread()
+{
+	m_bQuit = TRUE;
+	DWORD dwCode = 0;
+	TerminateThread(this->m_hThread, dwCode);
+	CloseHandle(this->m_hThread);
 }
