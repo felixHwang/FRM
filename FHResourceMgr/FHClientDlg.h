@@ -29,29 +29,27 @@ protected:
 	DECLARE_DISPATCH_MAP()
 	DECLARE_INTERFACE_MAP()
 
-	void OnClose();
-	BOOL DestroyWindow();
 public:
 	afx_msg void OnBnClickedButtonConnServer();
+	afx_msg void OnBnClickedButtonDisconnServer();
 
 	void OnTimer(UINT_PTR nIDEvent);
+	void OnClose();
 
 	LRESULT RecvDisconnect(WPARAM wParam,LPARAM lParam);
+	LRESULT RecvRequestFileInfo(WPARAM wParam,LPARAM lParam);
+
+	BOOL PreTranslateMessage(MSG* pMsg);
 
 private:
 	void StartConnect();
+	void AbleConnectFunction(BOOL flag = FALSE);
 
-	void AbleConnectFunction(bool flag = false);
-	FHMessage m_cMessage;
-
-	BOOL m_bConnecting;
-	CString m_cEditAddr;
-	//CEdit m_cEditCtrl;
-public:
-	afx_msg void OnBnClickedButtonDisconnServer();
-	LRESULT RecvRequestFileInfo(WPARAM wParam,LPARAM lParam);
-private:
-	CString m_cPromptText;
-	UINT m_szConnectTimes;
 	FHClientManager m_cClientMgr;
+	FHMessage m_cMessage;
+	CString m_cEditAddr;
+	CString m_cPromptText;
+	BOOL m_bConnecting;
+	UINT m_szConnectTimes;
+	
 };

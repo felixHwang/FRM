@@ -9,7 +9,7 @@ class FHFile
 public:
 	FHFile(void);
 	~FHFile(void);
-	bool GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileList);
-	bool GetFileList(const CString& strFilePath, FH_MSG_FileInfo& cFileInfo);
+	BOOL GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileList);
+	BOOL GetFileList(const CString& strFilePath, FH_MSG_FileInfo& cFileInfo);
 	BOOL JoinPath(const CString& strFilename, CString& absolutePath);
 };

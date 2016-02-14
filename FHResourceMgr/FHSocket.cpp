@@ -61,10 +61,10 @@ BOOL FHSocket::CreateSocket(UINT uiPort /*= FH_DEFAULT_CONNECT_PORT*/)
 	return TRUE;
 }
 
-BOOL FHSocket::StartConnect(CString cStrAddr /*= _T("127.0.0.1")*/)
+BOOL FHSocket::StartConnect(CString cStrAddr)
  {
 	m_cAddr = cStrAddr;
-	m_cAddr = "127.0.0.1";
+	//m_cAddr = "127.0.0.1";
 
 	unsigned long aip = inet_addr(m_cAddr.GetString());
 	SOCKADDR_IN socketAddr ;
@@ -441,16 +441,16 @@ BOOL FHSocket::RecvMessage()
 	return TRUE;
 }
 
-bool FHSocket::Accept(SOCKET& socket, sockaddr* addr, int* addrlen)
+BOOL FHSocket::Accept(SOCKET& socket, sockaddr* addr, int* addrlen)
 {
 
 	socket = accept(m_hSocket, addr, addrlen);
 	if (INVALID_SOCKET != socket) {
-		return true;
+		return TRUE;
 	}
 	else {
 		SetErrorCode(GetLastError());
-		return false;
+		return FALSE;
 	}
 }
 

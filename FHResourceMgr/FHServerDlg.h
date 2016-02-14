@@ -1,17 +1,12 @@
 #pragma once
 #include "afxcmn.h"
-
 #include "afxmt.h"
 #include <map>
 #include "FHServerManager.h"
-//#include <afxwin.h>
-//#include "FHSocketThread.h"
 
 // FHServerDlg ¶Ô»°¿ò
 
 
-class FHAcceptThread;
-class FHAcceptSocket;
 class FHFileBrowser;
 
 class FHServerDlg : public CDialog
@@ -35,21 +30,18 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DISPATCH_MAP()
 	DECLARE_INTERFACE_MAP()
+
 public:
 	afx_msg void OnNMRClickListOfClient(NMHDR *pNMHDR, LRESULT *pResult);
-
 	afx_msg LRESULT RefleshConnectList(WPARAM wParam,LPARAM lParam);
+	afx_msg LRESULT RecvClientDisconnect(WPARAM wParam,LPARAM lParam);
+	afx_msg LRESULT RefleshFileInfo(WPARAM wParam,LPARAM lParam);
+	afx_msg LRESULT RequestFileInfo(WPARAM wParam,LPARAM lParam);
+	afx_msg void OnSelectOpen();
+	BOOL PreTranslateMessage(MSG* pMsg);
 
 private:
 	CListCtrl m_cClientCtrlList;
-
 	std::map<CString, FHFileBrowser*> m_cFileBrList;
-
 	FHServerManager m_cServerManager;
-
-public:
-	afx_msg void OnSelectOpen();
-	LRESULT RecvClientDisconnect(WPARAM wParam,LPARAM lParam);
-	LRESULT RefleshFileInfo(WPARAM wParam,LPARAM lParam);
-	LRESULT RequestFileInfo(WPARAM wParam,LPARAM lParam);
 };

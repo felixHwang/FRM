@@ -51,3 +51,19 @@ void FHDiagLogin::OnClose()
 {
 	EndDialog(IDCANCEL);
 }
+
+BOOL FHDiagLogin::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	if(pMsg->message==WM_KEYDOWN) 
+	{ 
+		switch(pMsg->wParam)  
+		{  
+		case VK_RETURN:   // Enter 
+			return TRUE;
+		case VK_ESCAPE:   // Esc  
+			return TRUE;
+		} 
+	}
+	return CDialog::PreTranslateMessage(pMsg);
+}

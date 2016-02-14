@@ -99,7 +99,8 @@ void FHCommThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 					}
 					else if (FH_COMM_FILEINFO == cMsg.GetCommandID()) {
 						FH_MSG_FileInfo cFileInfo = cMsg.GetFileInfo();
-						UINT key = sscanf("%u", m_cClientInfo.key.GetString());
+						UINT key;
+						sscanf_s(m_cClientInfo.key.GetString(), "%u", &key);
 						AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_UPFILEINFO,(WPARAM)key,(LPARAM)&cMsg);
 					}
 				}

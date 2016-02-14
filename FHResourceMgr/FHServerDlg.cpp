@@ -4,11 +4,8 @@
 #include "stdafx.h"
 #include "FHResourceMgr.h"
 #include "FHServerDlg.h"
-#include "FHAcceptSocket.h"
-#include <vector>
-#include <string>
 #include "FHFileBrowser.h"
-
+#include "FHSocket.h"
 
 // FHServerDlg 对话框
 
@@ -46,11 +43,9 @@ BOOL FHServerDlg::OnInitDialog()
 
 	m_cClientCtrlList.SetExtendedStyle(m_cClientCtrlList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-
-	m_cClientCtrlList.InsertColumn(0, _TEXT("主机名"),LVCFMT_CENTER,100,0);
-	
-	m_cClientCtrlList.InsertColumn(1, _TEXT("IP地址"),LVCFMT_CENTER,100,1);
-	m_cClientCtrlList.InsertColumn(2, _TEXT("识别码"),LVCFMT_LEFT,100,2);
+	m_cClientCtrlList.InsertColumn(0, _TEXT("主机名"),LVCFMT_CENTER,150,0);
+	m_cClientCtrlList.InsertColumn(1, _TEXT("IP地址"),LVCFMT_CENTER,110,1);
+	m_cClientCtrlList.InsertColumn(2, _TEXT("识别码"),LVCFMT_LEFT,50,2);
 
 	
 	//m_cClientCtrlList.InsertItem(0, _T("Java"));   
@@ -84,14 +79,12 @@ BOOL FHServerDlg::OnInitDialog()
 	//	m_cClientCtrlList.DeleteItem(nIndex1);
 	//}
 
-
 	//info.flags = LVFI_PARTIAL|LVFI_STRING;
 	//info.psz = "Cs";
 	//int nIndex3 = m_cClientCtrlList.FindItem(&info);
 	//POINT  pos2;
 	//m_cClientCtrlList.get
 	//m_cClientCtrlList.GetItemPosition(nIndex3, &pos2);
-
 
 	m_cServerManager.StartListen("127.0.0.1");
 
@@ -122,8 +115,24 @@ BEGIN_INTERFACE_MAP(FHServerDlg, CDialog)
 	INTERFACE_PART(FHServerDlg, IID_IFHServerDlg, Dispatch)
 END_INTERFACE_MAP()
 
-
 // FHServerDlg 消息处理程序
+
+BOOL FHServerDlg::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	if(pMsg->message==WM_KEYDOWN) 
+	{ 
+		switch(pMsg->wParam)  
+		{  
+		case VK_RETURN:   // Enter 
+			return TRUE;
+		case VK_ESCAPE:   // Esc  
+			return TRUE;
+		} 
+	}
+	return CDialog::PreTranslateMessage(pMsg);
+}
+
 void FHServerDlg::OnNMRClickListOfClient(NMHDR *pNMHDR, LRESULT *pResult)
 {
 
@@ -139,9 +148,9 @@ void FHServerDlg::OnNMRClickListOfClient(NMHDR *pNMHDR, LRESULT *pResult)
 	GetCursorPos(&pt);
 	CMenu menu;
 	menu.LoadMenu(IDR_MENU1);
-	CMenu * pop=menu.GetSubMenu(0);
-	if(NULL != pop) {
-		pop->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,pt.x,pt.y,this);
+	CMenu* pop = menu.GetSubMenu(0);
+	if (NULL != pop) {
+		pop->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this);
 	}
 }
 
@@ -150,6 +159,33 @@ void FHServerDlg::OnSelectOpen()
 	// TODO: 在此添加命令处理程序代码
 
 	//m_cClientCtrlList.GetFirstSelectedItemPosition();
+	POSITION pos = m_cClientCtrlList.GetFirstSelectedItemPosition();  
+	if (NULL != pos) {  
+		while (pos) {  
+			int item = m_cClientCtrlList.GetNextSelectedItem(pos);  
+			CString key = m_cClientCtrlList.GetItemText(item, 2);
+			CString hostName = m_cClientCtrlList.GetItemText(item, 0);
+			UINT keyNum;
+			sscanf_s(key.GetString(), "%u", &keyNum);
+			if (m_cFileBrList.end() != m_cFileBrList.find(key)) {
+				// m_cFileBrList[key]->ShowWindow(SW_SHOW);
+				CString strFilePath = "";
+				RequestFileInfo(keyNum, (LPARAM)&strFilePath);
+			}
+			else {
+				FHFileBrowser* fileBR = new FHFileBrowser();
+				if (NULL != fileBR) {
+					m_cFileBrList[key] = fileBR;
+					fileBR->Create(IDD_DIALOGFILEBR, this);
+					fileBR->SetIdentifyKey(key);
+					fileBR->SetBrowerDescription(hostName + ":" + key);
+					// fileBR->ShowWindow(SW_SHOW);
+					CString strFilePath = "";
+					RequestFileInfo(keyNum, (LPARAM)&strFilePath);
+				}
+			}
+		}
+	}  
 }
 
 LRESULT FHServerDlg::RefleshConnectList(WPARAM wParam,LPARAM lParam)
@@ -160,13 +196,6 @@ LRESULT FHServerDlg::RefleshConnectList(WPARAM wParam,LPARAM lParam)
 	m_cClientCtrlList.InsertItem(count, cInfo.hostname);
 	m_cClientCtrlList.SetItemText(count, 1, cInfo.address);
 	m_cClientCtrlList.SetItemText(count, 2, cInfo.key);
-
-	FHFileBrowser* fileBR = new FHFileBrowser();
-	if (NULL != fileBR) {
-		m_cFileBrList[cInfo.key] = fileBR;
-		fileBR->Create(IDD_DIALOGFILEBR, this);
-		fileBR->ShowWindow(SW_SHOW);
-	}
 
 	return 0;
 }
@@ -194,7 +223,6 @@ LRESULT FHServerDlg::RecvClientDisconnect(WPARAM wParam,LPARAM lParam)
 
 	return 0;
 }
-
 
 LRESULT FHServerDlg::RefleshFileInfo(WPARAM wParam,LPARAM lParam)
 {
@@ -226,8 +254,9 @@ LRESULT FHServerDlg::RefleshFileInfo(WPARAM wParam,LPARAM lParam)
 		item.fileCreateTime = fileInfo.fileItemVec[i].fileCreateTime;
 		infoList.AddTail(item);
 	}
-	pcFileBrowser->DisplayFileList(infoList, false);
-	pcFileBrowser->SetEditFilePath(fileInfo.filePath, false);
+	pcFileBrowser->ShowWindow(TRUE);
+	pcFileBrowser->DisplayFileList(infoList, FALSE);
+	pcFileBrowser->SetEditFilePath(fileInfo.filePath, FALSE);
 	
 	return 0;
 }

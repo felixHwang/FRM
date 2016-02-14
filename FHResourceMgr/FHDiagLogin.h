@@ -25,4 +25,5 @@ public:
 	afx_msg void OnBnClickedServer();
 	afx_msg void OnBnClickedClient();
 	void OnClose();
+	BOOL PreTranslateMessage(MSG* pMsg);
 };

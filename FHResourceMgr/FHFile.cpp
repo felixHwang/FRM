@@ -11,7 +11,7 @@ FHFile::~FHFile(void)
 }
 
 
-bool FHFile::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileList)
+BOOL FHFile::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileList)
 {
 	CFileFind searchFile;
 	CString strWildpath = strFilePath + "\\*.*";
@@ -25,7 +25,7 @@ bool FHFile::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileLis
 		dotInfo.filename = "..";
 		fileList.AddTail(dotInfo);*/
 
-		BOOL bWorking = true;;
+		BOOL bWorking = TRUE;;
 		while (bWorking) {
 			bWorking = searchFile.FindNextFile();
 			if (searchFile.IsDots()) {
@@ -51,12 +51,12 @@ bool FHFile::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileLis
 			}
 		}
 		searchFile.Close();
-		return true;
+		return TRUE;
 	}
-	return false;
+	return FALSE;
 }
 
-bool FHFile::GetFileList(const CString& strFilePath, FH_MSG_FileInfo& cFileInfo)
+BOOL FHFile::GetFileList(const CString& strFilePath, FH_MSG_FileInfo& cFileInfo)
 {
 	CList<FH_FileInfo> fileList;
 	if (GetFileList(strFilePath, fileList)) {
@@ -74,9 +74,9 @@ bool FHFile::GetFileList(const CString& strFilePath, FH_MSG_FileInfo& cFileInfo)
 			item.fileCreateTime = cInfo.fileCreateTime;
 			cFileInfo.fileItemVec.push_back(item);
 		}
-		return true;
+		return TRUE;
 	}
-	return false;
+	return FALSE;
 }
 
 BOOL FHFile::JoinPath(const CString& strFilename, CString& absolutePath)

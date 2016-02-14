@@ -15,6 +15,7 @@ FHFileBrowser::FHFileBrowser(CWnd* pParent /*=NULL*/)
 	: CDialog(FHFileBrowser::IDD, pParent)
 	, m_cCurrFilePath(_T(""))
 	, m_cRemoteFilePath(_T(""))
+	, m_cIdentifyKey(_T(""))
 {
 
 }
@@ -85,22 +86,20 @@ BOOL FHFileBrowser::OnInitDialog()
 	return TRUE;
 }
 
-void FHFileBrowser::ResizeControl(UINT nID, int x, int y)  //nID为控件ID，x,y分别为对话框的当前长和宽
+BOOL FHFileBrowser::PreTranslateMessage(MSG* pMsg)
 {
-	CWnd* pWnd = GetDlgItem(nID); 
-	if(NULL != pWnd)
-	{
-		CRect rec; 
-		pWnd->GetWindowRect(&rec);		//获取控件变化前的大小
-		ScreenToClient(&rec);			//将控件大小装换位在对话框中的区域坐标
-		rec.left=rec.left*x/m_cLastDlgRect.Width();  //按照比例调整空间的新位置
-		rec.top=rec.top*y/m_cLastDlgRect.Height();
-		rec.bottom=rec.bottom*y/m_cLastDlgRect.Height();
-		rec.right=rec.right*x/m_cLastDlgRect.Width();
-		pWnd->MoveWindow(rec);			//伸缩控件
-		//pWnd->UpdateWindow();
-		//pWnd->UpdateData();
+	// TODO: Add your specialized code here and/or call the base class
+	if(pMsg->message==WM_KEYDOWN) 
+	{ 
+		switch(pMsg->wParam)  
+		{  
+		case VK_RETURN:   // Enter 
+			return TRUE;
+		case VK_ESCAPE:   // Esc  
+			return TRUE;
+		} 
 	}
+	return CDialog::PreTranslateMessage(pMsg);
 }
 
 void FHFileBrowser::OnSize(UINT nType, int cx, int cy)
@@ -108,16 +107,16 @@ void FHFileBrowser::OnSize(UINT nType, int cx, int cy)
 	CDialog::OnSize(nType, cx, cy);
 	if(SIZE_MINIMIZED != nType)
 	{
-		ResizeControl(IDC_EDIT1,cx,cy);  //对每一个控件依次做调整
+		ResizeControl(IDC_EDIT1,cx,cy);		 //对每一个控件依次做调整
 		ResizeControl(IDC_EDIT2,cx,cy);
 		ResizeControl(IDC_LIST3,cx,cy); 
 		ResizeControl(IDC_LIST4,cx,cy); 
 		ResizeControl(IDC_LIST5,cx,cy);
-		GetClientRect(&m_cLastDlgRect);   //最后要更新对话框的大小，当做下一次变化的旧坐标；
+		GetClientRect(&m_cLastDlgRect);		//最后要更新对话框的大小，当做下一次变化的旧坐标
 	}
 }
 
-bool FHFileBrowser::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileList)
+BOOL FHFileBrowser::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& fileList)
 {
 	CFileFind searchFile;
 	CString strWildpath = strFilePath + "\\*.*";
@@ -131,7 +130,7 @@ bool FHFileBrowser::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& 
 		dotInfo.filename = "..";
 		fileList.AddTail(dotInfo);
 
-		BOOL bWorking = true;;
+		BOOL bWorking = TRUE;;
 		while (bWorking) {
 			bWorking = searchFile.FindNextFile();
 			if (searchFile.IsDots()) {
@@ -156,12 +155,12 @@ bool FHFileBrowser::GetFileList(const CString& strFilePath, CList<FH_FileInfo>& 
 			}
 		}
 		searchFile.Close();
-		return true;
+		return TRUE;
 	}
-	return false;
+	return FALSE;
 }
 
-void FHFileBrowser::DisplayFileList(const CList<FH_FileInfo>& fileList, const bool local)
+void FHFileBrowser::DisplayFileList(const CList<FH_FileInfo>& fileList, const BOOL local)
 {
 	CListCtrl* pcListCtrl = NULL;
 	if (local) {
@@ -229,11 +228,33 @@ void FHFileBrowser::OnNMDblclkListItemRight(NMHDR *pNMHDR, LRESULT *pResult)
 	if (NULL != position) {
 		int index = m_cRemoteFileList.GetNextSelectedItem(position);
 		CString cFilename = m_cRemoteFileList.GetItemText(index, 0);
-		EnterDirectory(cFilename, false);
+		EnterDirectory(cFilename, FALSE);
 	}
 }
 
-void FHFileBrowser::EnterDirectory(const CString& strFilename, const bool local)
+void FHFileBrowser::SetIdentifyKey(const CString key)
+{
+	m_cIdentifyKey = key;
+}
+
+void FHFileBrowser::SetEditFilePath(const CString& strPath, const BOOL local)
+{
+	if (local) {
+		m_cCurrFilePath = strPath;
+		this->SetDlgItemText(IDC_EDIT1, m_cCurrFilePath);
+	}
+	else {
+		m_cRemoteFilePath = strPath;
+		this->SetDlgItemText(IDC_EDIT2, m_cRemoteFilePath);
+	}
+}
+
+void FHFileBrowser::SetBrowerDescription(const CString& strText)
+{
+	this->SetDlgItemText(IDC_STATIC, strText);
+}
+
+void FHFileBrowser::EnterDirectory(const CString& strFilename, const BOOL local)
 {
 	if (0 == strFilename.GetLength()) {
 		return;
@@ -260,20 +281,24 @@ void FHFileBrowser::EnterDirectory(const CString& strFilename, const bool local)
 		}
 	}
 	else {
-		AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_REQFILEINFO, 0, (LPARAM)&absPath);
+		UINT keyNum;
+		sscanf_s(m_cIdentifyKey.GetString(), "%u", &keyNum);
+		AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_REQFILEINFO, keyNum, (LPARAM)&absPath);
 	}
-	
 }
 
-void FHFileBrowser::SetEditFilePath(const CString& strPath, const bool local)
+void FHFileBrowser::ResizeControl(UINT nID, int x, int y)  //nID为控件ID，x,y分别为对话框的当前长和宽
 {
-	if (local) {
-		m_cCurrFilePath = strPath;
-		this->SetDlgItemText(IDC_EDIT1, m_cCurrFilePath);
-	}
-	else {
-		m_cRemoteFilePath = strPath;
-		this->SetDlgItemText(IDC_EDIT2, m_cRemoteFilePath);
+	CWnd* pWnd = GetDlgItem(nID); 
+	if(NULL != pWnd)
+	{
+		CRect rec; 
+		pWnd->GetWindowRect(&rec);						//获取控件变化前的大小
+		ScreenToClient(&rec);							//将控件大小装换位在对话框中的区域坐标
+		rec.left = rec.left*x/m_cLastDlgRect.Width();   //按照比例调整空间的新位置
+		rec.top = rec.top*y/m_cLastDlgRect.Height();
+		rec.bottom = rec.bottom*y/m_cLastDlgRect.Height();
+		rec.right = rec.right*x/m_cLastDlgRect.Width();
+		pWnd->MoveWindow(rec);							//伸缩控件
 	}
 }
-

@@ -21,11 +21,11 @@ public:
 
  	virtual BOOL CreateSocket(UINT uiPort = FH_DEFAULT_CONNECT_PORT);
 
-	virtual BOOL StartConnect(CString cStrAddr = _T("127.0.0.1"));
+	virtual BOOL StartConnect(CString cStrAddr);
 
 	virtual BOOL CloseSocket();
 
-	virtual bool Accept(SOCKET& socket, sockaddr* addr, int* addrlen);
+	virtual BOOL Accept(SOCKET& socket, sockaddr* addr, int* addrlen);
 
 	BOOL SendMessage(const FHMessage& msg);
 
