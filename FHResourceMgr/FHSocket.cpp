@@ -184,7 +184,7 @@ BOOL FHSocket::SendMessage(const FHMessage& cMsg)
 					return FALSE;
 				}
 				else {
-					DisplayErrMessageBox(_T("缓冲区满，发送文件信息到服务器成功"), tmp);
+					// DisplayErrMessageBox(_T("缓冲区满，发送文件信息到服务器成功"), tmp);
 				}
 
 				restSize = FH_MSG_BUFFER_SIZE;
@@ -311,6 +311,7 @@ BOOL FHSocket::ParseRecvMessage(const char* pcData)
 			m_bLastMsg = TRUE;
 			m_cLastMsg.MergeFileInfo(cMsg);
 			FH_WRITE4BYTE(m_pcRemainBuffer, &totalSize)
+			m_iRemainPos = 8;
 		}
 		else {
 			if (m_bLastMsg) {
