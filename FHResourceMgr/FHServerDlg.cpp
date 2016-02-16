@@ -174,7 +174,6 @@ void FHServerDlg::OnSelectOpen()
 			UINT keyNum;
 			sscanf_s(key.GetString(), "%u", &keyNum);
 			if (m_cFileBrList.end() != m_cFileBrList.find(key)) {
-				// m_cFileBrList[key]->ShowWindow(SW_SHOW);
 				CString strFilePath = "";
 				RequestFileInfo(keyNum, (LPARAM)&strFilePath);
 			}
@@ -185,7 +184,6 @@ void FHServerDlg::OnSelectOpen()
 					fileBR->Create(IDD_DIALOGFILEBR, this);
 					fileBR->SetIdentifyKey(key);
 					fileBR->SetBrowerDescription(hostName + ":" + key);
-					// fileBR->ShowWindow(SW_SHOW);
 					CString strFilePath = "";
 					RequestFileInfo(keyNum, (LPARAM)&strFilePath);
 				}
@@ -249,10 +247,7 @@ LRESULT FHServerDlg::RefleshFileInfo(WPARAM wParam,LPARAM lParam)
 
 	FHMessage cMsg =  *((FHMessage*)lParam);
 	CList<FH_FileInfo> infoList;
-	/*FH_FileInfo dots;
-	dots.filename = "..";
-	dots.fileType = FH_FILETYPE_DIR;
-	infoList.AddTail(dots);*/
+
 	FH_MSG_FileInfo fileInfo = cMsg.GetFileInfo();
 	for (size_t i=0; i<fileInfo.fileItemVec.size(); ++i) {
 		FH_FileInfo item;

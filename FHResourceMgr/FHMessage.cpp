@@ -4,11 +4,13 @@
 #include "stdafx.h"
 #include "FHResourceMgr.h"
 #include "FHMessage.h"
+#include "FHPublicDefine.h"
 
 // FHMessage
 
 FHMessage::FHMessage()
-:m_bHasConfigInfo(FALSE)
+:m_szCommandID(-1)
+,m_bHasConfigInfo(FALSE)
 ,m_bHasFileInfo(FALSE)
 ,m_bHasOpeInfo(FALSE)
 {
@@ -17,43 +19,6 @@ FHMessage::FHMessage()
 FHMessage::~FHMessage()
 {
 }
-
-void FHMessage::Serialize(CArchive& ar)
-{
-	/*
-	CObject::Serialize(ar);
-	if (ar.IsStoring()) {
-		// 序列化数据
-		ar<<m_szCommandID;
-	}
-	else {
-		// 反序列化数据
-		ar>>m_szCommandID;
-
-	}
-	if (FH_COMMANDID_CONFIG == m_szCommandID) {
-		SerializeConfigData(ar);
-	}
-	*/
-	
-
-}
-
-void FHMessage::SerializeConfigData(CArchive& ar)
-{
-	/*
-	if (ar.IsStoring()) {
-		// 序列化数据
-		ar<<m_cConfigInfo.addr<<m_cConfigInfo.hostname;
-	}
-	else {
-		// 反序列化数据
-		ar>>m_cConfigInfo.addr>>m_cConfigInfo.hostname;
-	}
-	*/
-}
-
-//IMPLEMENT_SERIAL(FHMessage,CObject,1)
 
 FHMessage& FHMessage::operator=(const FHMessage& cMsg)
 {
@@ -89,14 +54,19 @@ void FHMessage::Clear()
 	m_bHasOpeInfo = FALSE;
 
 	m_cFileInfo.Clear();
-	m_cConfigInfo.Clear();
+	m_cMachineInfo.Clear();
 	m_cOpeInfo.Clear();
 }
 
 void FHMessage::MergeFileInfo(const FHMessage& cMsg)
 {
 	if (cMsg.m_bHasFileInfo) {
+		if (0 < cMsg.m_cFileInfo.lenFilePath) {
+			m_cFileInfo.lenFilePath = cMsg.m_cFileInfo.lenFilePath;
+			m_cFileInfo.filePath = cMsg.m_cFileInfo.filePath;
+		}
 		this->m_bHasFileInfo = TRUE;
+		this->m_szCommandID = FH_COMM_FILEINFO;
 		for (size_t i=0; i<cMsg.m_cFileInfo.fileItemVec.size(); ++i) {
 			m_cFileInfo.fileItemVec.push_back(cMsg.m_cFileInfo.fileItemVec[i]);
 		}

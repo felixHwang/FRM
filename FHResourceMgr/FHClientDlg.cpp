@@ -78,7 +78,7 @@ BOOL FHClientDlg::OnInitDialog()
 
 	this->SetWindowText("¿Í»§¶Ë£º"+m_cClientMgr.GetHostName());
 
-	// OnBnClickedButtonConnServer();
+	OnBnClickedButtonConnServer();
 
 	return TRUE;
 }

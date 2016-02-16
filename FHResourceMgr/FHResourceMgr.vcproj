@@ -262,6 +262,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FHLog.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FHMessage.cpp"
 				>
 			</File>
@@ -321,6 +325,10 @@
 			</File>
 			<File
 				RelativePath=".\FHFile.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FHLog.h"
 				>
 			</File>
 			<File
@@ -412,6 +420,10 @@
 		</Filter>
 		<File
 			RelativePath=".\ClassDiagram1.cd"
+			>
+		</File>
+		<File
+			RelativePath=".\ClassDiagram2.cd"
 			>
 		</File>
 		<File

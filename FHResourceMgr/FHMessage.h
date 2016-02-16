@@ -127,13 +127,11 @@ public:
 
 	FHMessage& operator=(const FHMessage& cMsg);
 
-	virtual void Serialize(CArchive& ar);
-
 	UINT GetCommandID() const { return m_szCommandID; }
 	void SetCommandID(UINT val) { m_szCommandID = val; m_bHasConfigInfo = TRUE;}
 
-	const FH_MSG_MachineInfo GetMachineInfo() const { return m_cConfigInfo; }
-	void SetMachineInfo(const FH_MSG_MachineInfo& val) { m_cConfigInfo = val; }
+	const FH_MSG_MachineInfo GetMachineInfo() const { return m_cMachineInfo; }
+	void SetMachineInfo(const FH_MSG_MachineInfo& val) { m_cMachineInfo = val; }
 
 	const FH_MSG_FileInfo GetFileInfo() const;
 	void SetFileInfo(const FH_MSG_FileInfo& fileInfo);
@@ -143,11 +141,9 @@ public:
 	void SetOperatorInfo(const FH_MSG_OperatorInfo& opeInfo);
 
 private:
-	void SerializeConfigData(CArchive& ar);
-
 	UINT m_szCommandID;
 	
-	FH_MSG_MachineInfo m_cConfigInfo;
+	FH_MSG_MachineInfo m_cMachineInfo;
 	FH_MSG_FileInfo m_cFileInfo;
 	FH_MSG_OperatorInfo m_cOpeInfo;
 

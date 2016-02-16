@@ -2,6 +2,7 @@
 #include "FHSocket.h"
 #include "FHPublicDefine.h"
 #include "stdafx.h"
+#include "FHLog.h"
 #include "FHResourceMgr.h"
 #include "FHConnectThread.h"
 #include "FHAcceptThread.h"
@@ -33,6 +34,7 @@ FHSocket::FHSocket(const FH_SOCKET_TYPE type, const SOCKET socket)
 	// SO_RCVBUF > SO_SNDBUF
 	m_pcRecvBuffer = new char[FH_MSG_BUFFER_SIZE];
 	m_pcRemainBuffer = new char[FH_MSG_BUFFER_SIZE];
+	m_cLastMsg.Clear();
 }
 
 FHSocket::~FHSocket(void)
@@ -123,7 +125,7 @@ BOOL FHSocket::SendMessage(const FHMessage& cMsg)
 		memcpy(pWrite,  cMsg.GetMachineInfo().hostname.GetString(), tmp);
 		tmp += sizeof(int)*3;
 		memcpy(m_pcRecvBuffer, &tmp, sizeof(int));
-		tmp = send(m_hSocket, m_pcRecvBuffer, tmp, 0);
+		tmp = Send(m_hSocket, m_pcRecvBuffer, tmp, 0);
 		if (SOCKET_ERROR == tmp) {
 			DisplayErrMessageBox(_T("发送客户端信息到服务器失败"), GetLastError());
 			return FALSE;
@@ -149,7 +151,7 @@ BOOL FHSocket::SendMessage(const FHMessage& cMsg)
 		}
 
 		FH_WRITE4BYTE(m_pcRecvBuffer, &totalSize)
-		tmp = send(m_hSocket, m_pcRecvBuffer, totalSize, 0);
+		tmp = Send(m_hSocket, m_pcRecvBuffer, totalSize, 0);
 		if (SOCKET_ERROR == tmp || tmp != totalSize) {
 			DisplayErrMessageBox(_T("发送命令信息到客户端失败"), GetLastError());
 			return FALSE;
@@ -160,24 +162,28 @@ BOOL FHSocket::SendMessage(const FHMessage& cMsg)
 	}
 	else if (FH_COMM_FILEINFO == tmp) {
 		// calculate msg size
+		const int itemFixedSize = 4*3 + 10;
 		const FH_MSG_FileInfo& fileInfo = cMsg.GetFileInfo();
 		int totalSize = fileInfo.lenFilePath + 12;
 		for (size_t i=0; i<fileInfo.fileItemVec.size(); ++i) {
-			totalSize += 22 + fileInfo.fileItemVec[i].lenFilename;
+			totalSize += itemFixedSize + fileInfo.fileItemVec[i].lenFilename;
 		}
 		FH_WRITE4BYTE(m_pcRecvBuffer, &totalSize)
 		
 		tmp = fileInfo.lenFilePath;
 		FH_WRITE4BYTE(pWrite, &tmp)
 		pWrite += sizeof(tmp);
-		int restSize = FH_MSG_BUFFER_SIZE - sizeof(tmp);
+		int restSize = FH_MSG_BUFFER_SIZE - (pWrite-m_pcRecvBuffer);
 		FH_WRITESTRING(pWrite, fileInfo.filePath.GetString(), tmp);
 		pWrite += tmp;
 		restSize -= tmp;
 
 		for (size_t i=0; i<fileInfo.fileItemVec.size(); ++i) {
-			if (22 + fileInfo.fileItemVec[i].lenFilename > restSize) {
-				tmp = send(m_hSocket, m_pcRecvBuffer, pWrite-m_pcRecvBuffer, 0);
+			if (-1 != fileInfo.fileItemVec[i].filename.Find("54")) {
+				int i = 0;
+			}
+			if (itemFixedSize + fileInfo.fileItemVec[i].lenFilename > restSize) {
+				tmp = Send(m_hSocket, m_pcRecvBuffer, pWrite-m_pcRecvBuffer, 0);
 				if (SOCKET_ERROR == tmp) {
 					SetErrorCode(GetLastError());
 					DisplayErrMessageBox(_T("发送文件信息到服务器失败"), GetLastError());
@@ -216,7 +222,7 @@ BOOL FHSocket::SendMessage(const FHMessage& cMsg)
 			restSize -= tmp;
 		}
 
-		tmp = send(m_hSocket, m_pcRecvBuffer, pWrite-m_pcRecvBuffer, 0);
+		tmp = Send(m_hSocket, m_pcRecvBuffer, pWrite-m_pcRecvBuffer, 0);
 		if (SOCKET_ERROR == tmp) {
 			SetErrorCode(GetLastError());
 			DisplayErrMessageBox(_T("发送文件信息到服务器失败"), GetLastError());
@@ -230,7 +236,7 @@ BOOL FHSocket::SendMessage(const FHMessage& cMsg)
 	return TRUE;
 }
 
-BOOL FHSocket::ParseRecvMessage(const char* pcData)
+BOOL FHSocket::ParseRecvMessage(const char* pcData, const int recvSize)
 {
 	int totalSize = *((int*)pcData);
 	const char* pRead = pcData + sizeof(int);
@@ -268,6 +274,9 @@ BOOL FHSocket::ParseRecvMessage(const char* pcData)
 		m_iRemainPos = 0;
 	}
 	else if (FH_COMM_FILEINFO == commandID) {
+		CString strHead;
+		strHead.Format("FHSocket::Parse size=%d", recvSize);
+		FHLog::DumpFile(strHead, pRead, recvSize);
 		FHMessage cMsg;
 		cMsg.SetCommandID(commandID);
 		FH_MSG_FileInfo cFileInfo;
@@ -279,8 +288,8 @@ BOOL FHSocket::ParseRecvMessage(const char* pcData)
 			cFileInfo.lenFilePath = len;
 			cFileInfo.filePath = filePath;
 		}
-
-		int restBufferSize = (totalSize>FH_MSG_BUFFER_SIZE)?FH_MSG_BUFFER_SIZE:(totalSize-(pRead-pcData));
+		
+		int restBufferSize = recvSize - (pRead-pcData);
 		while (restBufferSize > 22) {
 			FH_MSG_FileInfo::FH_MSG_FileInfo_Item item;
 			item.fileType = *((int*)pRead);
@@ -290,6 +299,9 @@ BOOL FHSocket::ParseRecvMessage(const char* pcData)
 				pRead += 12;
 				CString filename(pRead, item.lenFilename);
 				item.filename = filename;
+				if (item.filename=="resource.h") {
+					int i = 0;
+				}
 				pRead += item.lenFilename;
 				CString createTime(pRead, 10);
 				item.fileCreateTime = createTime;
@@ -304,10 +316,12 @@ BOOL FHSocket::ParseRecvMessage(const char* pcData)
 		}
 
 		cMsg.SetFileInfo(cFileInfo);
-		
+
 		totalSize = totalSize - (pRead-pcData);
+		
 		// 接下来还要消息接收
 		if (0 < totalSize) {
+			totalSize += 8;
 			m_bLastMsg = TRUE;
 			m_cLastMsg.MergeFileInfo(cMsg);
 			FH_WRITE4BYTE(m_pcRemainBuffer, &totalSize)
@@ -316,6 +330,7 @@ BOOL FHSocket::ParseRecvMessage(const char* pcData)
 		else {
 			if (m_bLastMsg) {
 				m_cLastMsg.MergeFileInfo(cMsg);
+				m_cListMsg.AddTail(m_cLastMsg);
 			}
 			else {
 				m_cListMsg.AddTail(cMsg);
@@ -331,6 +346,7 @@ BOOL FHSocket::ParseRecvMessage(const char* pcData)
 			while (0 != restBufferSize) {
 				// 保留大小和命令类型
 				m_pcRemainBuffer[m_iRemainPos++] = *pRead++;
+				--restBufferSize;
 
 			}
 		}
@@ -344,7 +360,7 @@ BOOL FHSocket::RecvMessage()
 		return FALSE;
 	}
 	ClearError();
-	int recvSize = recv(m_hSocket, m_pcRecvBuffer, SO_RCVBUF, 0);
+	int recvSize = Recv(m_hSocket, m_pcRecvBuffer, FH_MSG_BUFFER_SIZE, 0);
 	if (SOCKET_ERROR == recvSize) {
 		if (WSAECONNRESET != GetLastError()) {
 			this->DisplayErrMessageBox("接收数据失败", GetLastError());
@@ -356,22 +372,27 @@ BOOL FHSocket::RecvMessage()
 
 		// 上次有消息遗留，需要拼接处理
 		if (0 < m_iRemainPos) {
-			// 获取上次消息大小和剩余需要接收大小
+			// 获取剩余消息大小和剩余需要接收大小
 			int lastSize = *((int*)m_pcRemainBuffer);
 			int lastNeed = lastSize - m_iRemainPos;
 			// 此次依旧未能接收完全
 			if (recvSize < lastNeed) {
 				// 缓冲区无法完全装载,部分解析
 				if (FH_MSG_BUFFER_SIZE < m_iRemainPos+recvSize) {
-					int copySize = FH_MSG_BUFFER_SIZE - m_iRemainPos;
-					memcpy(m_pcRemainBuffer+m_iRemainPos, m_pcRecvBuffer, copySize);
-					m_iRemainPos += copySize;
-					ParseRecvMessage(m_pcRemainBuffer);
-
-					//拷贝剩下消息，偏移已自动处理
-					int newCopySize = recvSize - copySize;
-					memcpy(m_pcRemainBuffer+m_iRemainPos, m_pcRecvBuffer+copySize, newCopySize);
-					m_iRemainPos += newCopySize;
+					int restCopySize = recvSize;
+					char* pSrcBuffer = m_pcRecvBuffer;
+					while (0 < restCopySize) {
+						int canCopySize = restCopySize;
+						if (canCopySize+m_iRemainPos > FH_MSG_BUFFER_SIZE) {
+							canCopySize = FH_MSG_BUFFER_SIZE - m_iRemainPos;
+						}
+						
+						memcpy(m_pcRemainBuffer+m_iRemainPos, pSrcBuffer, canCopySize);
+						pSrcBuffer += canCopySize;
+						m_iRemainPos += canCopySize;
+						ParseRecvMessage(m_pcRemainBuffer, m_iRemainPos);
+						restCopySize -= canCopySize;
+					}
 				}
 				else {
 					memcpy(m_pcRemainBuffer+m_iRemainPos, m_pcRecvBuffer, recvSize);
@@ -382,29 +403,35 @@ BOOL FHSocket::RecvMessage()
 			else {	// 上次遗留消息可以接收完全
 				// 读取到完整的消息，并开始解析（遗留消息处理）
 				// 缓冲区无法完全装载,部分解析
-				if (FH_MSG_BUFFER_SIZE < m_iRemainPos+recvSize) {
-					int copySize = FH_MSG_BUFFER_SIZE - m_iRemainPos;
-					memcpy(m_pcRemainBuffer+m_iRemainPos, m_pcRecvBuffer, copySize);
-					m_iRemainPos += copySize;
-					ParseRecvMessage(m_pcRemainBuffer);
+				if (FH_MSG_BUFFER_SIZE < m_iRemainPos+lastNeed) {
+					int restCopySize = lastNeed;
+					char* pSrcBuffer = m_pcRecvBuffer;
+					while (0 < restCopySize) {
+						int canCopySize = restCopySize;
+						if (canCopySize+m_iRemainPos > FH_MSG_BUFFER_SIZE) {
+							canCopySize = FH_MSG_BUFFER_SIZE - m_iRemainPos;
+						}
 
-					//拷贝剩下消息，偏移已自动处理
-					int newCopySize = recvSize - copySize;
-					memcpy(m_pcRemainBuffer+m_iRemainPos, m_pcRecvBuffer+copySize, newCopySize);
-					m_iRemainPos += newCopySize;
-					ParseRecvMessage(m_pcRemainBuffer);
+						memcpy(m_pcRemainBuffer+m_iRemainPos, pSrcBuffer, canCopySize);
+						pSrcBuffer += canCopySize;
+						m_iRemainPos += canCopySize;
+						ParseRecvMessage(m_pcRemainBuffer, m_iRemainPos);
+						restCopySize -= canCopySize;
+					}
+					
 				}
 				else {
 					memcpy(m_pcRemainBuffer+m_iRemainPos, m_pcRecvBuffer, lastNeed);
-					ParseRecvMessage(m_pcRemainBuffer);
+					m_iRemainPos += lastNeed;
+					ParseRecvMessage(m_pcRemainBuffer, m_iRemainPos);
 				}
 
 				// 处理剩余的消息
 				char* pRead = m_pcRecvBuffer + lastNeed;
 				int remaindSize = recvSize - lastNeed;
 				int newSize = *((int*)pRead);
-				while (newSize <= remaindSize) {
-					ParseRecvMessage(pRead);
+				while (0 != remaindSize && newSize <= remaindSize) {
+					ParseRecvMessage(pRead, m_iRemainPos);
 					remaindSize -= newSize;
 					if (0 == remaindSize) {
 						break;
@@ -425,7 +452,7 @@ BOOL FHSocket::RecvMessage()
 			int remaindSize = recvSize;
 			int newSize = *((int*)pRead);
 			while (newSize <= remaindSize) {
-				ParseRecvMessage(pRead);
+				ParseRecvMessage(pRead, recvSize);
 				remaindSize -= newSize;
 				if (0 == remaindSize) {
 					break;
@@ -498,3 +525,23 @@ void FHSocket::SetErrorCode(int errorCode)
 {
 	m_iErrorCode = errorCode;
 }
+
+int FHSocket::Send(SOCKET s, const char* buf, int len, int flags)
+{
+	CString strHead;
+	strHead.Format("FHSocket::Send size=%d", len);
+	//FHLog::DumpFile(strHead, buf, len);
+	return send(s, buf, len, flags);
+}
+
+int FHSocket::Recv(SOCKET s, char* buf, int len, int flags)
+{
+	int ret = recv(s, buf, len, flags);
+	if (SOCKET_ERROR != ret) {
+		CString strHead;
+		strHead.Format("FHSocket::Recv size=%d", ret);
+		//FHLog::DumpFile(strHead, buf, ret);
+	}
+	return ret;
+}
+

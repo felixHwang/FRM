@@ -44,7 +44,13 @@ public:
 protected:
 	void SetErrorCode(int errorCode);
 
-	BOOL ParseRecvMessage(const char* pcData);
+	BOOL ParseRecvMessage(const char* pcData, const int recvSize=0);
+
+	int Send(SOCKET s, const char* buf, int len, int flags);
+
+	int Recv(SOCKET s, char* buf, int len, int flags);
+
+
 	SOCKET m_hSocket;
 	FH_SOCKET_TYPE m_eSocketType;
 	CString m_cAddr;

@@ -7,6 +7,8 @@
 #include "FHClientDlg.h"
 #include "FHServerDlg.h"
 
+#include "FHLog.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -70,6 +72,7 @@ BOOL CFHResourceMgrApp::InitInstance()
 	INT_PTR nLoginResult = /*FH_DIAGLOGIN_SERVER*/ loginDlg.DoModal();
 	if (FH_DIAGLOGIN_CLIENT == nLoginResult) {
 		// client
+		FHLog::InitFileLog("D:\\client.log");
 		FHClientDlg clientDlg;
 		m_pMainWnd = &clientDlg;
 		INT_PTR ret = clientDlg.DoModal();
@@ -79,10 +82,13 @@ BOOL CFHResourceMgrApp::InitInstance()
 	else if (FH_DIAGLOGIN_SERVER == nLoginResult)
 	{
 		// server
+		FHLog::InitFileLog("D:\\server.log");
 		FHServerDlg serverDlg;
 		m_pMainWnd = &serverDlg;
 		serverDlg.DoModal();
 	}
+
+	FHLog::DeInitFileLog();
 
 	/*
 	CFHResourceMgrDlg dlg;
