@@ -31,6 +31,7 @@ void FHFileBrowserDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIST3, m_cLocalFileList);
 	DDX_Text(pDX, IDC_EDIT2, m_cRemoteFilePath);
 	DDX_Control(pDX, IDC_LIST4, m_cRemoteFileList);
+	DDX_Control(pDX, IDC_EDIT_LOG, m_cBrEditLog);
 }
 
 
@@ -111,7 +112,7 @@ void FHFileBrowserDlg::OnSize(UINT nType, int cx, int cy)
 		ResizeControl(IDC_EDIT2, cx, cy);
 		ResizeControl(IDC_LIST3, cx, cy); 
 		ResizeControl(IDC_LIST4, cx, cy); 
-		ResizeControl(IDC_LIST5, cx, cy);
+		ResizeControl(IDC_EDIT_LOG, cx, cy);
 
 		if (NULL != GetDlgItem(IDC_LIST3) && NULL != GetDlgItem(IDC_LIST4)) {
 			double ratio = 1.0*cx/m_cLastDlgRect.Width();
@@ -220,6 +221,15 @@ void FHFileBrowserDlg::SetBrowerDescription(const CString& strText)
 	this->SetDlgItemText(IDC_STATIC, strText);
 }
 
+void FHFileBrowserDlg::OutputFileBrowserLog(const CString strText)
+{
+	m_cBrEditLog.SetSel( -1, -1);      //设定光标选中的区域
+	m_cBrEditLog.ReplaceSel(strText);
+	m_cBrEditLog.SetSel( -1, -1);
+	m_cBrEditLog.ReplaceSel("\n");
+	m_cBrEditLog.LineScroll(m_cBrEditLog.GetLineCount());
+}
+
 void FHFileBrowserDlg::EnterDirectory(const CString& strFilename, const BOOL local)
 {
 	if (0 == strFilename.GetLength()) {
@@ -245,6 +255,7 @@ void FHFileBrowserDlg::EnterDirectory(const CString& strFilename, const BOOL loc
 		if (cFile.GetFileList(absPath, fileList)) {
 			SetEditFilePath(absPath);
 			DisplayFileList(fileList);
+			OutputFileBrowserLog("显示本地目录：" + absPath);
 		}
 	}
 	else {

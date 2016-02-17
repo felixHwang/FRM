@@ -1,6 +1,7 @@
 #pragma once
 #include "afxcmn.h"
 #include "FHPublicDefine.h"
+#include "afxwin.h"
 
 
 // FHFileBrowserDlg 对话框
@@ -34,18 +35,19 @@ public:
 	void SetEditFilePath(const CString& strPath, const BOOL local = TRUE);
 
 	void SetBrowerDescription(const CString& strText);
+	void OutputFileBrowserLog(const CString strText);
 
 private:
 	void ResizeControl(UINT nID, int x, int y);
 	void EnterDirectory(const CString& strFilename, const BOOL local = TRUE);
-	
+
 	CImageList m_cLocalImageList;
 	CListCtrl m_cLocalFileList;
 	CImageList m_cRemoteImageList;
 	CListCtrl m_cRemoteFileList;
+	CEdit m_cBrEditLog;
 	CRect  m_cLastDlgRect;   // 用于保存原对话框大小
 	CString m_cRemoteFilePath;
 	CString m_cCurrFilePath;
 	CString m_cIdentifyKey;
-
 };

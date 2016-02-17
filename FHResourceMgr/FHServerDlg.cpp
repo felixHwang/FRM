@@ -262,6 +262,7 @@ LRESULT FHServerDlg::RefleshFileInfo(WPARAM wParam,LPARAM lParam)
 	}
 	pcFileBrowser->DisplayFileList(infoList, FALSE);
 	pcFileBrowser->SetEditFilePath(fileInfo.filePath, FALSE);
+	pcFileBrowser->OutputFileBrowserLog("ÏÔÊ¾Ô¶¶ËÄ¿Â¼£º" + fileInfo.filePath);
 	
 	return 0;
 }
