@@ -45,7 +45,7 @@ private:
 	CListCtrl m_cLocalFileList;
 	CImageList m_cRemoteImageList;
 	CListCtrl m_cRemoteFileList;
-	CEdit m_cBrEditLog;
+	CListCtrl m_cLogList;
 	CRect  m_cLastDlgRect;   // 用于保存原对话框大小
 	CString m_cRemoteFilePath;
 	CString m_cCurrFilePath;

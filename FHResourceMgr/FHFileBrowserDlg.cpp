@@ -6,6 +6,7 @@
 #include "FHFileBrowserDlg.h"
 #include "FHFile.h"
 
+#define FH_MAX_LOGITEMS	100
 
 // FHFileBrowserDlg 对话框
 
@@ -31,7 +32,7 @@ void FHFileBrowserDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIST3, m_cLocalFileList);
 	DDX_Text(pDX, IDC_EDIT2, m_cRemoteFilePath);
 	DDX_Control(pDX, IDC_LIST4, m_cRemoteFileList);
-	DDX_Control(pDX, IDC_EDIT_LOG, m_cBrEditLog);
+	DDX_Control(pDX, IDC_LIST_LOG, m_cLogList);
 }
 
 
@@ -70,12 +71,18 @@ BOOL FHFileBrowserDlg::OnInitDialog()
 	dwStyle = dwStyle|LVS_EX_FULLROWSELECT|LVS_EX_SUBITEMIMAGES ;  
 	m_cRemoteFileList.SetExtendedStyle(dwStyle);
 
+	dwStyle = m_cLogList.GetExtendedStyle();    
+	dwStyle = dwStyle|LVS_EX_SUBITEMIMAGES ;
+	m_cLogList.SetExtendedStyle(dwStyle);
+	m_cLogList.SetItemCount(FH_MAX_LOGITEMS);
 
 	m_cLocalFileList.InsertColumn(0, _TEXT("文件名"),LVCFMT_CENTER,200,0);
 	m_cLocalFileList.InsertColumn(1, _TEXT("创建时间"),LVCFMT_CENTER,100,1);
 
 	m_cRemoteFileList.InsertColumn(0, _TEXT("文件名"),LVCFMT_CENTER,200,0);
 	m_cRemoteFileList.InsertColumn(1, _TEXT("创建时间"),LVCFMT_CENTER,100,1);
+
+	m_cLogList.InsertColumn(0, _TEXT("日志"),LVCFMT_CENTER,500,0);
 
 	char currPath[257];
 	GetCurrentDirectory(sizeof(currPath), currPath);
@@ -112,7 +119,7 @@ void FHFileBrowserDlg::OnSize(UINT nType, int cx, int cy)
 		ResizeControl(IDC_EDIT2, cx, cy);
 		ResizeControl(IDC_LIST3, cx, cy); 
 		ResizeControl(IDC_LIST4, cx, cy); 
-		ResizeControl(IDC_EDIT_LOG, cx, cy);
+		ResizeControl(IDC_LIST_LOG, cx, cy);
 
 		if (NULL != GetDlgItem(IDC_LIST3) && NULL != GetDlgItem(IDC_LIST4)) {
 			double ratio = 1.0*cx/m_cLastDlgRect.Width();
@@ -223,11 +230,14 @@ void FHFileBrowserDlg::SetBrowerDescription(const CString& strText)
 
 void FHFileBrowserDlg::OutputFileBrowserLog(const CString strText)
 {
-	m_cBrEditLog.SetSel( -1, -1);      //设定光标选中的区域
-	m_cBrEditLog.ReplaceSel(strText);
-	m_cBrEditLog.SetSel( -1, -1);
-	m_cBrEditLog.ReplaceSel("\n");
-	m_cBrEditLog.LineScroll(m_cBrEditLog.GetLineCount());
+	int count = m_cLogList.GetItemCount();
+	if (FH_MAX_LOGITEMS <= count) {
+		m_cLogList.DeleteItem(0);
+	}
+	count = m_cLogList.GetItemCount();
+	m_cLogList.InsertItem(count, strText);
+	// Ensure that the last item is visible.
+	m_cLogList.EnsureVisible(count, FALSE);
 }
 
 void FHFileBrowserDlg::EnterDirectory(const CString& strFilename, const BOOL local)
