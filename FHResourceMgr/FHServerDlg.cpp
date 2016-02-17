@@ -257,7 +257,9 @@ LRESULT FHServerDlg::RefleshFileInfo(WPARAM wParam,LPARAM lParam)
 		item.fileCreateTime = fileInfo.fileItemVec[i].fileCreateTime;
 		infoList.AddTail(item);
 	}
-	pcFileBrowser->ShowWindow(TRUE);
+	if (!pcFileBrowser->IsWindowVisible()) {
+		pcFileBrowser->ShowWindow(TRUE);
+	}
 	pcFileBrowser->DisplayFileList(infoList, FALSE);
 	pcFileBrowser->SetEditFilePath(fileInfo.filePath, FALSE);
 	

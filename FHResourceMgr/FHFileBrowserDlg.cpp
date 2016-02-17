@@ -70,10 +70,10 @@ BOOL FHFileBrowserDlg::OnInitDialog()
 	m_cRemoteFileList.SetExtendedStyle(dwStyle);
 
 
-	m_cLocalFileList.InsertColumn(0, _TEXT("文件名"),LVCFMT_CENTER,100,0);
+	m_cLocalFileList.InsertColumn(0, _TEXT("文件名"),LVCFMT_CENTER,200,0);
 	m_cLocalFileList.InsertColumn(1, _TEXT("创建时间"),LVCFMT_CENTER,100,1);
 
-	m_cRemoteFileList.InsertColumn(0, _TEXT("文件名"),LVCFMT_CENTER,100,0);
+	m_cRemoteFileList.InsertColumn(0, _TEXT("文件名"),LVCFMT_CENTER,200,0);
 	m_cRemoteFileList.InsertColumn(1, _TEXT("创建时间"),LVCFMT_CENTER,100,1);
 
 	char currPath[257];
@@ -106,13 +106,22 @@ BOOL FHFileBrowserDlg::PreTranslateMessage(MSG* pMsg)
 void FHFileBrowserDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialog::OnSize(nType, cx, cy);
-	if(SIZE_MINIMIZED != nType)
-	{
-		ResizeControl(IDC_EDIT1,cx,cy);		 //对每一个控件依次做调整
-		ResizeControl(IDC_EDIT2,cx,cy);
-		ResizeControl(IDC_LIST3,cx,cy); 
-		ResizeControl(IDC_LIST4,cx,cy); 
-		ResizeControl(IDC_LIST5,cx,cy);
+	if (SIZE_MINIMIZED != nType) {
+		ResizeControl(IDC_EDIT1, cx, cy);		 //对每一个控件依次做调整
+		ResizeControl(IDC_EDIT2, cx, cy);
+		ResizeControl(IDC_LIST3, cx, cy); 
+		ResizeControl(IDC_LIST4, cx, cy); 
+		ResizeControl(IDC_LIST5, cx, cy);
+
+		if (NULL != GetDlgItem(IDC_LIST3) && NULL != GetDlgItem(IDC_LIST4)) {
+			double ratio = 1.0*cx/m_cLastDlgRect.Width();
+			m_cLocalFileList.SetColumnWidth(0, m_cLocalFileList.GetColumnWidth(0)*ratio);
+			m_cLocalFileList.SetColumnWidth(1, m_cLocalFileList.GetColumnWidth(1)*ratio);
+			m_cRemoteFileList.SetColumnWidth(0, m_cRemoteFileList.GetColumnWidth(0)*ratio);
+			m_cRemoteFileList.SetColumnWidth(1, m_cRemoteFileList.GetColumnWidth(1)*ratio);
+		}
+
+
 		GetClientRect(&m_cLastDlgRect);		//最后要更新对话框的大小，当做下一次变化的旧坐标
 	}
 }
@@ -245,7 +254,7 @@ void FHFileBrowserDlg::EnterDirectory(const CString& strFilename, const BOOL loc
 	}
 }
 
-void FHFileBrowserDlg::ResizeControl(UINT nID, int x, int y)  //nID为控件ID，x,y分别为对话框的当前长和宽
+void FHFileBrowserDlg::ResizeControl(UINT nID, int x, int y)
 {
 	CWnd* pWnd = GetDlgItem(nID); 
 	if(NULL != pWnd)
