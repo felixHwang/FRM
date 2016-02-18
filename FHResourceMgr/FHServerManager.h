@@ -15,6 +15,7 @@ public:
 	BOOL StopListen();
 	FHSocket* GetChannelSocket(CString key);
 	void RemoveCommChannel(CString key);
+
 private:
 	FHAcceptThread* m_pcAcceptThread;
 	FHAcceptSocket* m_pcAcceptSocket;

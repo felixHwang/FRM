@@ -38,7 +38,8 @@ struct FH_MSG_FileInfo {
 		CString filename;
 		CString fileCreateTime;
 
-		FH_MSG_FileInfo_Item() {
+		FH_MSG_FileInfo_Item()
+		{
 			fileType = -1;
 			fileSize = -1;
 			lenFilename = 0;
@@ -46,7 +47,8 @@ struct FH_MSG_FileInfo {
 			fileCreateTime = "";
 		}
 
-		FH_MSG_FileInfo_Item& operator=(const FH_MSG_FileInfo_Item& cItem) {
+		FH_MSG_FileInfo_Item& operator=(const FH_MSG_FileInfo_Item& cItem)
+		{
 			fileType = cItem.fileType;
 			fileSize = cItem.fileSize;
 			lenFilename = cItem.lenFilename;
@@ -76,7 +78,7 @@ struct FH_MSG_FileInfo {
 	
 };
 
-#define FH_MSG_OPECODE_LSDIR	1
+#define FH_MSG_OPECODE_LSDIR		1
 
 struct FH_MSG_OperatorInfo
 {
@@ -128,10 +130,10 @@ public:
 	FHMessage& operator=(const FHMessage& cMsg);
 
 	UINT GetCommandID() const { return m_szCommandID; }
-	void SetCommandID(UINT val) { m_szCommandID = val; m_bHasConfigInfo = TRUE;}
+	void SetCommandID(UINT val) { m_szCommandID = val; }
 
-	const FH_MSG_MachineInfo GetMachineInfo() const { return m_cMachineInfo; }
-	void SetMachineInfo(const FH_MSG_MachineInfo& val) { m_cMachineInfo = val; }
+	const FH_MSG_MachineInfo GetMachineInfo() const;
+	void SetMachineInfo(const FH_MSG_MachineInfo& val);
 
 	const FH_MSG_FileInfo GetFileInfo() const;
 	void SetFileInfo(const FH_MSG_FileInfo& fileInfo);
@@ -147,7 +149,7 @@ private:
 	FH_MSG_FileInfo m_cFileInfo;
 	FH_MSG_OperatorInfo m_cOpeInfo;
 
-	BOOL m_bHasConfigInfo;
+	BOOL m_bHasMachineInfo;
 	BOOL m_bHasFileInfo;
 	BOOL m_bHasOpeInfo;
 };

@@ -2,7 +2,7 @@
 #include "FHLog.h"
 
 #ifdef _DEBUG
-#define FH_LOG_OPEN	1
+#define FH_LOG_OPEN	0
 #else
 #define FH_LOG_OPEN	0
 #endif // _DEBUG
@@ -37,6 +37,7 @@ BOOL FHLog::DumpFile(CString strHead, const void* pBuffer, const int size)
 		char line[] = "\n";
 		fwrite(line, sizeof(line), 1, m_pcFile);
 		fwrite(pBuffer, size, 1, m_pcFile);
+		fwrite(line, sizeof(line), 1, m_pcFile);
 		fflush(m_pcFile);
 		return TRUE;
 	}

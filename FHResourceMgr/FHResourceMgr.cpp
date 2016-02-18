@@ -75,9 +75,7 @@ BOOL CFHResourceMgrApp::InitInstance()
 		FHLog::InitFileLog("D:\\client.log");
 		FHClientDlg clientDlg;
 		m_pMainWnd = &clientDlg;
-		INT_PTR ret = clientDlg.DoModal();
-		int i = 1;
-		
+		clientDlg.DoModal();
 	}
 	else if (FH_DIAGLOGIN_SERVER == nLoginResult)
 	{

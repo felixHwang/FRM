@@ -130,6 +130,8 @@ void FHFileBrowserDlg::OnSize(UINT nType, int cx, int cy)
 		}
 
 
+
+
 		GetClientRect(&m_cLastDlgRect);		//最后要更新对话框的大小，当做下一次变化的旧坐标
 	}
 }
@@ -287,6 +289,7 @@ void FHFileBrowserDlg::ResizeControl(UINT nID, int x, int y)
 		rec.top = rec.top*y/m_cLastDlgRect.Height();
 		rec.bottom = rec.bottom*y/m_cLastDlgRect.Height();
 		rec.right = rec.right*x/m_cLastDlgRect.Width();
+
 		pWnd->MoveWindow(rec);							//伸缩控件
 	}
 }

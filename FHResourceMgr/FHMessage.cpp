@@ -10,7 +10,7 @@
 
 FHMessage::FHMessage()
 :m_szCommandID(-1)
-,m_bHasConfigInfo(FALSE)
+,m_bHasMachineInfo(FALSE)
 ,m_bHasFileInfo(FALSE)
 ,m_bHasOpeInfo(FALSE)
 {
@@ -23,7 +23,7 @@ FHMessage::~FHMessage()
 FHMessage& FHMessage::operator=(const FHMessage& cMsg)
 {
 	this->SetCommandID(cMsg.GetCommandID());
-	if (cMsg.m_bHasConfigInfo) {
+	if (cMsg.m_bHasMachineInfo) {
 		this->SetMachineInfo(cMsg.GetMachineInfo());
 	}
 	if (cMsg.m_bHasFileInfo) {
@@ -38,7 +38,6 @@ FHMessage& FHMessage::operator=(const FHMessage& cMsg)
 const FH_MSG_FileInfo FHMessage::GetFileInfo() const
 {
 	return m_cFileInfo;
-
 }
 
 void FHMessage::SetFileInfo(const FH_MSG_FileInfo& fileInfo)
@@ -50,7 +49,7 @@ void FHMessage::SetFileInfo(const FH_MSG_FileInfo& fileInfo)
 void FHMessage::Clear()
 {
 	m_bHasFileInfo = FALSE;
-	m_bHasConfigInfo = FALSE;
+	m_bHasMachineInfo = FALSE;
 	m_bHasOpeInfo = FALSE;
 
 	m_cFileInfo.Clear();
@@ -84,4 +83,15 @@ void FHMessage::SetOperatorInfo(const FH_MSG_OperatorInfo& opeInfo)
 	m_bHasOpeInfo = TRUE;
 	m_cOpeInfo = opeInfo;
 
+}
+
+const FH_MSG_MachineInfo FHMessage::GetMachineInfo() const
+{
+	return m_cMachineInfo;
+}
+
+void FHMessage::SetMachineInfo(const FH_MSG_MachineInfo& val)
+{
+	m_bHasMachineInfo = TRUE;
+	m_cMachineInfo = val;
 }

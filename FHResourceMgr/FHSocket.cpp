@@ -274,9 +274,6 @@ BOOL FHSocket::ParseRecvMessage(const char* pcData, const int recvSize)
 		m_iRemainPos = 0;
 	}
 	else if (FH_COMM_FILEINFO == commandID) {
-		CString strHead;
-		strHead.Format("FHSocket::Parse size=%d", recvSize);
-		FHLog::DumpFile(strHead, pRead, recvSize);
 		FHMessage cMsg;
 		cMsg.SetCommandID(commandID);
 		FH_MSG_FileInfo cFileInfo;
@@ -446,7 +443,6 @@ BOOL FHSocket::RecvMessage()
 			}
 		}
 		else { //上次消息未有遗留
-			// 逻辑同上
 			// 处理剩余的消息
 			char* pRead = m_pcRecvBuffer;
 			int remaindSize = recvSize;
@@ -495,9 +491,11 @@ CString FHSocket::GetPeerName()
 
 void FHSocket::DisplayErrMessageBox(CString str, int err)
 {
+#ifdef _DEBUG
 	CString strErr;
 	strErr.Format("[FHSocket]%s,err=%d", str.GetString(), err);
 	AfxMessageBox(strErr);
+#endif
 }
 
 BOOL FHSocket::PopMessage(FHMessage& cMsg)

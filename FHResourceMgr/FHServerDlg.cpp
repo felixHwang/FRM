@@ -174,7 +174,7 @@ void FHServerDlg::OnSelectOpen()
 			UINT keyNum;
 			sscanf_s(key.GetString(), "%u", &keyNum);
 			if (m_cFileBrList.end() != m_cFileBrList.find(key)) {
-				CString strFilePath = "";
+				CString strFilePath = _T("");
 				RequestFileInfo(keyNum, (LPARAM)&strFilePath);
 			}
 			else {
@@ -184,7 +184,7 @@ void FHServerDlg::OnSelectOpen()
 					fileBR->Create(IDD_DIALOGFILEBR, this);
 					fileBR->SetIdentifyKey(key);
 					fileBR->SetBrowerDescription(hostName + ":" + key);
-					CString strFilePath = "";
+					CString strFilePath = _T("");
 					RequestFileInfo(keyNum, (LPARAM)&strFilePath);
 				}
 			}

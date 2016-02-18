@@ -48,7 +48,10 @@ void FHConnectThread::OnCallBack(WPARAM wParam,LPARAM lParam)
 			if (m_pcConnectSocket->RecvMessage()) {
 				while (m_pcConnectSocket->PopMessage(cMsg)) {
 					if (FH_COMM_OPEINFO == cMsg.GetCommandID()) {
-						 AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_REQFILEINFO,0,(LPARAM)&cMsg);
+						UINT opeCode = cMsg.GetOperatorInfo().operatorCode;
+						if (FH_MSG_OPECODE_LSDIR == opeCode) {
+							AfxGetApp()->m_pMainWnd->SendMessage(FH_MSCMD_REQFILEINFO, 0, (LPARAM)&cMsg);
+						}
 					}
 				}
 			}

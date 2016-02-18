@@ -44,7 +44,7 @@ public:
 private:
 	void StartConnect();
 	void AbleConnectFunction(BOOL flag = FALSE);
-
+	
 	FHClientManager m_cClientMgr;
 	CString m_cEditAddr;
 	CString m_cPromptText;

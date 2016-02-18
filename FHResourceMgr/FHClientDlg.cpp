@@ -14,7 +14,7 @@ IMPLEMENT_DYNAMIC(FHClientDlg, CDialog)
 
 FHClientDlg::FHClientDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(FHClientDlg::IDD, pParent)
-	, m_cEditAddr(_T("127.0.0.1")) // 输入服务器IP地址
+	, m_cEditAddr(_T("输入服务器IP地址")) // 127.0.0.1
 	, m_cPromptText(_T("输入IP地址后开始连接，默认端口8989"))
 	, m_bConnecting(FALSE)
 	, m_szConnectTimes(0)
@@ -78,7 +78,7 @@ BOOL FHClientDlg::OnInitDialog()
 
 	this->SetWindowText("客户端："+m_cClientMgr.GetHostName());
 
-	OnBnClickedButtonConnServer();
+	// OnBnClickedButtonConnServer();
 
 	return TRUE;
 }
